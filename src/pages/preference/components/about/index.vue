@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { getTauriVersion } from '@tauri-apps/api/app'
-import { emit } from '@tauri-apps/api/event'
 import { appLogDir } from '@tauri-apps/api/path'
 import { writeText } from '@tauri-apps/plugin-clipboard-manager'
-import { openPath, openUrl } from '@tauri-apps/plugin-opener'
+import { openPath } from '@tauri-apps/plugin-opener'
 import { arch, platform, version } from '@tauri-apps/plugin-os'
 import { Button, message } from 'antdv-next'
 import { onMounted, ref } from 'vue'
@@ -11,7 +10,7 @@ import { useI18n } from 'vue-i18n'
 
 import ProListItem from '@/components/pro-list-item/index.vue'
 import ProList from '@/components/pro-list/index.vue'
-import { GITHUB_LINK, LISTEN_KEY } from '@/constants'
+import { GITHUB_LINK } from '@/constants'
 import { useAppStore } from '@/stores/app'
 
 const appStore = useAppStore()
@@ -21,10 +20,6 @@ const { t } = useI18n()
 onMounted(async () => {
   logDir.value = await appLogDir()
 })
-
-function handleUpdate() {
-  emit(LISTEN_KEY.UPDATE_APP)
-}
 
 async function copyInfo() {
   const info = {
@@ -40,10 +35,6 @@ async function copyInfo() {
 
   message.success(t('pages.preference.about.hints.copySuccess'))
 }
-
-function feedbackIssue() {
-  openUrl(`${GITHUB_LINK}/issues/new/choose`)
-}
 </script>
 
 <template>
@@ -51,14 +42,7 @@ function feedbackIssue() {
     <ProListItem
       :description="`v${appStore.version}`"
       :title="appStore.name"
-    >
-      <Button
-        type="primary"
-        @click="handleUpdate"
-      >
-        {{ $t('pages.preference.about.buttons.checkUpdate') }}
-      </Button>
-    </ProListItem>
+    />
 
     <ProListItem
       :description="$t('pages.preference.about.hints.appInfo')"
@@ -70,13 +54,6 @@ function feedbackIssue() {
     </ProListItem>
 
     <ProListItem :title="$t('pages.preference.about.labels.openSource')">
-      <Button
-        danger
-        @click="feedbackIssue"
-      >
-        {{ $t('pages.preference.about.buttons.feedbackIssues') }}
-      </Button>
-
       <template #description>
         <a :href="GITHUB_LINK">
           {{ GITHUB_LINK }}

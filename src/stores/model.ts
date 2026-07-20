@@ -9,12 +9,21 @@ import { reactive, ref } from 'vue'
 import { join } from '@/utils/path'
 
 export type ModelMode = 'standard' | 'keyboard' | 'gamepad'
+export type ModelRenderer = 'live2d' | 'image'
+
+export interface ImageModel {
+  src: string
+  width: number
+  height: number
+}
 
 export interface Model {
   id: string
   path: string
   mode: ModelMode
   isPreset: boolean
+  renderer?: ModelRenderer
+  image?: ImageModel
 }
 
 export const useModelStore = defineStore('model', () => {
@@ -30,7 +39,10 @@ export const useModelStore = defineStore('model', () => {
   const init = async () => {
     const modelsPath = await resolveResource('assets/models')
 
-    const nextModels = filter(models.value, { isPreset: false })
+    const nextModels = filter(models.value, { isPreset: false }).map(model => ({
+      ...model,
+      renderer: model.renderer ?? 'live2d' as const,
+    }))
     const presetModels = filter(models.value, { isPreset: true })
 
     const modes: ModelMode[] = ['gamepad', 'keyboard', 'standard']
@@ -43,6 +55,14 @@ export const useModelStore = defineStore('model', () => {
         mode,
         isPreset: true,
         path: join(modelsPath, mode),
+        renderer: mode === 'standard' ? 'image' : 'live2d',
+        image: mode === 'standard'
+          ? {
+              src: '/characters/blue-white-cat.png',
+              width: 420,
+              height: 520,
+            }
+          : undefined,
       })
     }
 

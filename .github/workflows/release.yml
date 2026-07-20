@@ -1,4 +1,4 @@
-name: BongoCat Release
+name: BlueWhitePet Release
 
 on:
   push:
@@ -63,7 +63,7 @@ jobs:
           node-version: 20
       - uses: pnpm/action-setup@v3
         with:
-          version: latest
+          version: 10.26.0
 
       - name: Install rust target
         run: rustup target add ${{ matrix.target }}
@@ -101,7 +101,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: BongoCat ${{ needs.create-release.outputs.APP_VERSION }}
+          releaseName: BlueWhitePet ${{ github.ref_name }}
           releaseBody: ''
           releaseDraft: true
           prerelease: false

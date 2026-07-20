@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 target
+tmp
 
 # Editor directories and files
 .idea

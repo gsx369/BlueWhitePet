@@ -87,6 +87,7 @@ watch(selectPaths, async (paths) => {
         path: toPath,
         mode,
         isPreset: false,
+        renderer: 'live2d',
       })
 
       message.success(t('pages.preference.model.hints.importSuccess'))

@@ -1,151 +1,47 @@
-![BongoCat](https://socialify.git.ci/ayangweb/BongoCat/image?custom_description=&description=1&font=Source+Code+Pro&forks=1&issues=1&logo=https%3A%2F%2Fgithub.com%2Fayangweb%2FBongoCat%2Fblob%2Fmaster%2Fsrc-tauri%2Fassets%2Flogo-mac.png%3Fraw%3Dtrue&name=1&owner=1&pattern=Floating+Cogs&pulls=1&stargazers=1&theme=Auto)
+# BlueWhitePet
 
-<div align="center">
-  <div>
-    <a href="https://github.com/ayangweb/BongoCat/releases"><img alt="Windows" src="https://img.shields.io/badge/-Windows-blue?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB0PSIxNzI2MzA1OTcxMDA2IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjE1NDgiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48cGF0aCBkPSJNNTI3LjI3NTU1MTYxIDk2Ljk3MTAzMDEzdjM3My45OTIxMDY2N2g0OTQuNTEzNjE5NzVWMTUuMDI2NzU3NTN6TTUyNy4yNzU1NTE2MSA5MjguMzIzNTA4MTVsNDk0LjUxMzYxOTc1IDgwLjUyMDI4MDQ5di00NTUuNjc3NDcxNjFoLTQ5NC41MTM2MTk3NXpNNC42NzA0NTEzNiA0NzAuODMzNjgyOTdINDIyLjY3Njg1OTI1VjExMC41NjM2ODE5N2wtNDE4LjAwNjQwNzg5IDY5LjI1Nzc5NzUzek00LjY3MDQ1MTM2IDg0Ni43Njc1OTcwM0w0MjIuNjc2ODU5MjUgOTE0Ljg2MDMxMDEzVjU1My4xNjYzMTcwM0g0LjY3MDQ1MTM2eiIgcC1pZD0iMTU0OSIgZmlsbD0iI2ZmZmZmZiI+PC9wYXRoPjwvc3ZnPg==" /></a>
-    <a href="https://github.com/ayangweb/BongoCat/releases"><img alt="MacOS" src="https://img.shields.io/badge/-MacOS-black?style=flat-square&logo=apple&logoColor=white" /></a>
-    <a href="https://github.com/ayangweb/BongoCat/releases"><img alt="Linux" src="https://img.shields.io/badge/-Linux-yellow?style=flat-square&logo=linux&logoColor=white" /></a>
-  </div>
+基于 [ayangweb/BongoCat](https://github.com/ayangweb/BongoCat) 改造的蓝白猫桌宠。默认角色采用小八（Hachiware）风格的原创同人 PNG，保留了原项目导入自定义 Live2D 模型的能力。
 
-  <p>
-    <a href="./LICENSE"><img src="https://img.shields.io/github/license/ayangweb/BongoCat?style=flat-square" /></a>
-    <a href="https://github.com/ayangweb/BongoCat/releases/latest"><img src="https://img.shields.io/github/package-json/v/ayangweb/BongoCat?style=flat-square"/></a>
-    <a href="https://github.com/ayangweb/BongoCat/releases"><img src="https://img.shields.io/github/downloads/ayangweb/BongoCat/total?style=flat-square"/></a>
-  </p>
+![默认蓝白猫角色](public/characters/blue-white-cat.png)
 
-  <p>
-    <a href="https://trendshift.io/developers/8507" target="_blank"><img src="https://trendshift.io/api/badge/developers/8507" alt="ayangweb | Trendshift" width="250" height="55" /></a>
-    <a href="https://trendshift.io/repositories/14605" target="_blank"><img src="https://trendshift.io/api/badge/repositories/14605" alt="ayangweb%2FBongoCat | Trendshift" width="250" height="55" /></a>
-    <a href="https://hellogithub.com/repository/7d23863fd4be47b39e816193ded385c9" target="_blank">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=7d23863fd4be47b39e816193ded385c9&claim_uid=5ihRVIuTYBmSGtQ&theme=dark" />
-        <source media="(prefers-color-scheme: light)" srcset="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=7d23863fd4be47b39e816193ded385c9&claim_uid=5ihRVIuTYBmSGtQ&theme=neutral" />
-        <img alt="Star History Chart" src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=7d23863fd4be47b39e816193ded385c9&claim_uid=5ihRVIuTYBmSGtQ&theme=neutral" width="250" height="55" />
-      </picture>
-    </a>
-  </p>
-</div>
+## 互动
 
-| macOS                                                                                        | Windows                                                                                        | Linux(x11)                                                                                   |
-| -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| ![macOS](https://i0.hdslb.com/bfs/openplatform/dff276b96d49c5d6c431b74b531aab72191b3d87.png) | ![Windows](https://i0.hdslb.com/bfs/openplatform/a4149b753856ee7f401989da902cf3b5ad35b39e.png) | ![Linux](https://i0.hdslb.com/bfs/openplatform/3b49f961819d3ff63b2b80251c1cc13c27e986b0.png) |
+- 短按角色：按“跳跃 → 压扁回弹 → 左右抖动”循环播放互动。
+- 每次互动随机显示一句符合角色气质的简短中文气泡，气泡位于角色上方的独立区域。
+- 按住或拖动角色：移动桌宠窗口。
+- 鼠标滚轮：以 5% 为一档缩放桌宠，范围为 40%～300%。
+- 右键角色：打开原有设置菜单。
+- 设置 → 模型：切换预设，或导入完整的自定义 Live2D 模型目录。
 
-## 赞助商
+默认角色使用透明 PNG sprite；导入模型继续走 BongoCat 原有 Live2D 渲染链路。Live2D 模型目录仍需包含 `.model3.json`、`.moc3` 及其引用的纹理等资源，普通 PNG 不能直接当作 Live2D 模型导入。
 
-<a href="https://www.toolsetlink.com">
-  <img height="54" alt="UpgradeLink" src="https://github.com/user-attachments/assets/6b84fb0f-3f1d-44b5-9932-2298bc999d8d" />
-</a>
+## 开发
 
-## 开发背景
+```powershell
+pnpm install --frozen-lockfile
+pnpm dev
+```
 
-本项目的灵感来源于 [MMmmmoko](https://github.com/MMmmmoko) 大佬开发的 [Bongo-Cat-Mver](https://github.com/MMmmmoko/Bongo-Cat-Mver)。它以独特的猫咪互动功能深受用户喜爱，但仅支持 Windows 平台。作为一名深度 macOS 用户，我特别希望在自己的设备上也能使用这款可爱的猫咪，于是我决定开发一个适配 macOS 的版本。
+## 生成 Windows EXE
 
-同时，得益于 [Tauri](https://github.com/tauri-apps/tauri) 强大的跨平台能力，本项目不仅支持 macOS，还兼容 Windows 和 Linux(x11)，让更多的用户都能与这只可爱的猫咪互动！
+本地安装 Rust stable-msvc、Visual Studio 2022 Build Tools（Desktop development with C++）和 Windows SDK 后运行：
 
-## 下载
+```powershell
+pnpm tauri build --target x86_64-pc-windows-msvc --bundles nsis --no-sign --ci
+```
 
-- [夸克网盘](https://pan.quark.cn/s/70f2f2663ce1)
-- [GitHub Releases](https://github.com/ayangweb/BongoCat/releases)
+安装器输出到：
 
-不确定下载哪一个？请查阅[下载指南](.github/DOWNLOAD_GUIDE.md)。
+```text
+target/x86_64-pc-windows-msvc/release/bundle/nsis/BlueWhitePet_1.0.0_x64-setup.exe
+```
 
-## 功能介绍
+也可以把项目推送到 GitHub，在 Actions 页面手动运行 **Build Windows EXE**，然后下载 `BlueWhitePet-windows-x64` 构建产物。
 
-- 适配 macOS、Windows 和 Linux(x11)。
-- 根据键盘、鼠标或手柄的操作，同步对应的动作。
-- 支持导入自定义模型，自由打造专属猫咪形象。
-- 完全开源，代码公开透明，绝不收集任何用户数据。
-- 支持离线运行，无需联网，保护用户隐私。
+## 授权说明
 
-## 模型转换
+- 本项目基于 MIT 许可的 BongoCat 修改，详见 [LICENSE](LICENSE)。
+- Live2D Cubism Core 受其单独许可约束。
+- 默认角色图为 AI 生成的非官方同人素材。吉伊卡哇及相关角色权利归原权利人所有，公开或商业分发前请自行确认获得必要授权。
 
-如果你想将 Bongo-Cat-Mver 应用中的模型转换为兼容 BongoCat 的格式，可以使用以下工具：
-
-🔗 [在线转换](https://bongocat.vteamer.cc)
-
-## 更多模型
-
-你可以在这个仓库中探索、下载更多猫咪模型，或提交你的创作，与大家一起分享：
-
-📦 [Awesome-BongoCat](https://github.com/ayangweb/Awesome-BongoCat)
-
-## 社区交流
-
-<table>
-  <thead>
-    <tr>
-      <th>QQ 群 1</th>
-      <th>QQ 群 2</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-        <a href="https://qm.qq.com/q/AS3gNv2Vzy">
-          <picture>
-            <source
-              media="(prefers-color-scheme: dark)"
-              srcset="https://i0.hdslb.com/bfs/openplatform/8ecdc4982ab01b59d7731fcca3ec26631a274560.png"
-            />
-            <source
-              media="(prefers-color-scheme: light)"
-              srcset="https://i0.hdslb.com/bfs/openplatform/09f56580397063e1819c4c2ed63d07dee12720e1.png"
-            />
-            <img
-              alt="QQ Group 1"
-              src="https://i0.hdslb.com/bfs/openplatform/09f56580397063e1819c4c2ed63d07dee12720e1.png"
-              height="250"
-            />
-          </picture>
-        </a>
-      </td>
-      <td>
-        <a href="https://qm.qq.com/q/TmltLAod2O">
-          <picture>
-            <source
-              media="(prefers-color-scheme: dark)"
-              srcset="https://i0.hdslb.com/bfs/openplatform/473c522487ff33e0f32b15466aeb0734f17161c8.png"
-            />
-            <source
-              media="(prefers-color-scheme: light)"
-              srcset="https://i0.hdslb.com/bfs/openplatform/d5ae8c5af6ae1d0a1f066705ee822d1287384cf6.png"
-            />
-            <img
-              alt="QQ Group 2"
-              src="https://i0.hdslb.com/bfs/openplatform/d5ae8c5af6ae1d0a1f066705ee822d1287384cf6.png"
-              height="250"
-            />
-          </picture>
-        </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-## 赞赏
-
-每一份认可都值得被珍视！赞赏随缘，心意无价，谢谢你的支持 ❤️
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://i0.hdslb.com/bfs/openplatform/e7438bff14cdfb6bfd0feacbb482f99ea4093294.png" />
-  <source media="(prefers-color-scheme: light)" srcset="https://i0.hdslb.com/bfs/openplatform/da55cc3ec1556580c91e59f589792866c998c7c6.png" />
-  <img alt="微信赞赏码" src="https://i0.hdslb.com/bfs/openplatform/da55cc3ec1556580c91e59f589792866c998c7c6.png" height="250" />
-</picture>
-
-## 贡献指南
-
-感谢大家为 BongoCat 做出的宝贵贡献！如果你也希望为 BongoCat 做出贡献，请查阅[贡献指南](.github/CONTRIBUTING.md)。
-
-<a href="https://openomy.com/ayangweb/BongoCat" target="_blank" style="display: block; width: 100%;" align="center">
-  <img src="https://openomy.com/svg?repo=ayangweb/BongoCat&chart=bubble" alt="Contribution Leaderboard" style="display: block; width: 100%;" />
-</a>
-
-## 历史星标
-
-<a href="https://www.star-history.com/#ayangweb/BongoCat&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ayangweb/BongoCat&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ayangweb/BongoCat&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ayangweb/BongoCat&type=Date" />
- </picture>
-</a>
+完整第三方说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

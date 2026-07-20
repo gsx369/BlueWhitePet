@@ -69,7 +69,20 @@ export function useModel() {
     try {
       if (!modelStore.currentModel) return
 
-      const { path } = modelStore.currentModel
+      const { image, path, renderer = 'live2d' } = modelStore.currentModel
+
+      if (renderer === 'image' && image) {
+        live2d.destroy()
+
+        modelSize.value = {
+          width: image.width,
+          height: image.height,
+        }
+        modelStore.currentMotions = []
+        modelStore.currentExpressions = []
+
+        return
+      }
 
       await resolveResource(path)
 

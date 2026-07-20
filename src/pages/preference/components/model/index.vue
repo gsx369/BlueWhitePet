@@ -97,7 +97,7 @@ async function handleDelete(item: Model) {
           />
 
           <i
-            v-if="catStore.model.behavior && modelStore.currentModel?.id === data.id"
+            v-if="catStore.model.behavior && data.renderer !== 'image' && modelStore.currentModel?.id === data.id"
             class="i-lucide:smile"
             @click.stop="openBehaviorModal = true"
           />
