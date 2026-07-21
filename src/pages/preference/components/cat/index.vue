@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { Divider, Flex, InputNumber, Slider, SpaceAddon, SpaceCompact, Switch } from 'antdv-next'
+import { emit } from '@tauri-apps/api/event'
+import { Button, Divider, Flex, InputNumber, Slider, SpaceAddon, SpaceCompact, Switch } from 'antdv-next'
 
 import ProListItem from '@/components/pro-list-item/index.vue'
 import ProList from '@/components/pro-list/index.vue'
+import { LISTEN_KEY } from '@/constants'
+import { positionMainWindow } from '@/plugins/window'
 import { useCatStore } from '@/stores/cat'
 import { isWindows } from '@/utils/platform'
 
 const catStore = useCatStore()
+
+function resetStats() {
+  catStore.resetStats()
+  void emit(LISTEN_KEY.RESET_PET_STATS)
+}
 </script>
 
 <template>
@@ -71,6 +79,41 @@ const catStore = useCatStore()
         :min="0"
       />
     </ProListItem>
+
+    <ProListItem
+      :description="$t('pages.preference.cat.hints.idleRendering')"
+      :title="$t('pages.preference.cat.labels.idleRendering')"
+    >
+      <Switch v-model:checked="catStore.performance.idleEnabled" />
+    </ProListItem>
+
+    <ProListItem
+      :description="$t('pages.preference.cat.hints.idleAfter')"
+      :title="$t('pages.preference.cat.labels.idleAfter')"
+    >
+      <SpaceCompact>
+        <InputNumber
+          v-model:value="catStore.performance.idleAfter"
+          class="w-20"
+          :max="3600"
+          :min="5"
+        />
+
+        <SpaceAddon>s</SpaceAddon>
+      </SpaceCompact>
+    </ProListItem>
+
+    <ProListItem
+      :description="$t('pages.preference.cat.hints.idleFPS')"
+      :title="$t('pages.preference.cat.labels.idleFPS')"
+    >
+      <InputNumber
+        v-model:value="catStore.performance.idleFPS"
+        class="w-20"
+        :max="240"
+        :min="1"
+      />
+    </ProListItem>
   </ProList>
 
   <ProList :title="$t('pages.preference.cat.labels.windowSettings')">
@@ -79,6 +122,13 @@ const catStore = useCatStore()
       :title="$t('pages.preference.cat.labels.passThrough')"
     >
       <Switch v-model:checked="catStore.window.passThrough" />
+    </ProListItem>
+
+    <ProListItem
+      :description="$t('pages.preference.cat.hints.gameMode')"
+      :title="$t('pages.preference.cat.labels.gameMode')"
+    >
+      <Switch v-model:checked="catStore.window.gameMode" />
     </ProListItem>
 
     <ProListItem
@@ -120,6 +170,54 @@ const catStore = useCatStore()
       :title="$t('pages.preference.cat.labels.keepInScreen')"
     >
       <Switch v-model:checked="catStore.window.keepInScreen" />
+    </ProListItem>
+
+    <ProListItem
+      :description="$t('pages.preference.cat.hints.windowPosition')"
+      :title="$t('pages.preference.cat.labels.windowPosition')"
+      vertical
+    >
+      <Flex
+        gap="small"
+        wrap="wrap"
+      >
+        <Button
+          size="small"
+          @click="positionMainWindow('top-left')"
+        >
+          {{ $t('pages.preference.cat.buttons.topLeft') }}
+        </Button>
+        <Button
+          size="small"
+          @click="positionMainWindow('top-right')"
+        >
+          {{ $t('pages.preference.cat.buttons.topRight') }}
+        </Button>
+        <Button
+          size="small"
+          @click="positionMainWindow('bottom-left')"
+        >
+          {{ $t('pages.preference.cat.buttons.bottomLeft') }}
+        </Button>
+        <Button
+          size="small"
+          @click="positionMainWindow('bottom-right')"
+        >
+          {{ $t('pages.preference.cat.buttons.bottomRight') }}
+        </Button>
+        <Button
+          size="small"
+          @click="positionMainWindow('center')"
+        >
+          {{ $t('pages.preference.cat.buttons.center') }}
+        </Button>
+        <Button
+          size="small"
+          @click="positionMainWindow('next-monitor')"
+        >
+          {{ $t('pages.preference.cat.buttons.nextMonitor') }}
+        </Button>
+      </Flex>
     </ProListItem>
 
     <ProListItem
@@ -165,6 +263,22 @@ const catStore = useCatStore()
           },
         }"
       />
+    </ProListItem>
+  </ProList>
+
+  <ProList :title="$t('pages.preference.cat.labels.localStats')">
+    <ProListItem :title="$t('pages.preference.cat.labels.inputCount')">
+      {{ catStore.stats.inputCount.toLocaleString() }}
+    </ProListItem>
+
+    <ProListItem :title="$t('pages.preference.cat.labels.interactionCount')">
+      {{ catStore.stats.interactionCount.toLocaleString() }}
+    </ProListItem>
+
+    <ProListItem>
+      <Button @click="resetStats">
+        {{ $t('pages.preference.cat.buttons.resetStats') }}
+      </Button>
     </ProListItem>
   </ProList>
 </template>

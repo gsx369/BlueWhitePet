@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "presetKey": "keyboard",
+  "displayName": "BongoCat · 键盘模式",
+  "renderer": "live2d",
+  "mode": "keyboard",
+  "entry": "cat.model3.json",
+  "cover": "resources/cover.png",
+  "interactionBounds": { "x": 0.12, "y": 0.02, "width": 0.74, "height": 0.70 },
+  "bubbleBounds": { "x": 0.02, "y": 0.02, "width": 0.36, "height": 0.20 },
+  "order": 30
+}

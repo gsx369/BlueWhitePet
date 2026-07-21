@@ -13,6 +13,7 @@ dist-ssr
 *.local
 target
 tmp
+/BlueWhitePet_*_x64-setup.exe
 
 # Editor directories and files
 .idea

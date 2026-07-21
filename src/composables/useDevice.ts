@@ -149,7 +149,11 @@ export function useDevice() {
       } else {
         document.body.style.setProperty('opacity', 'unset')
 
-        appWindow.setIgnoreCursorEvents(catStore.window.passThrough)
+        appWindow.setIgnoreCursorEvents(
+          catStore.window.passThrough
+          || catStore.window.gameMode
+          || catStore.temporaryPassThrough,
+        )
       }
 
       wasInWindow = isInWindow
@@ -185,6 +189,12 @@ export function useDevice() {
 
   useTauriListen<DeviceEvent>(LISTEN_KEY.DEVICE_CHANGED, ({ payload }) => {
     const { kind, value } = payload
+
+    if (kind === 'KeyboardPress' || kind === 'MousePress') {
+      catStore.markActivity(true)
+    } else if (kind === 'MouseMove') {
+      catStore.markActivity()
+    }
 
     if (kind === 'KeyboardPress' || kind === 'KeyboardRelease') {
       const nextValue = getSupportedKey(value)

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "presetKey": "blue-white-a-standard",
+  "displayName": "小八 A · 标准模式",
+  "renderer": "live2d",
+  "mode": "standard",
+  "entry": "cat.model3.json",
+  "cover": "resources/cover.png",
+  "interactionBounds": { "x": 0.12, "y": 0.02, "width": 0.74, "height": 0.76 },
+  "bubbleBounds": { "x": 0.02, "y": 0.02, "width": 0.36, "height": 0.20 },
+  "order": 5,
+  "default": true
+}

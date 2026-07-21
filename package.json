@@ -17,6 +17,7 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "lint": "eslint --fix src",
+    "validate:models": "tsx scripts/validateModelLibrary.ts",
     "preinstall": "npx only-allow pnpm",
     "prepare": "simple-git-hooks",
     "release": "release-it"

@@ -3,7 +3,10 @@
     "main": {
       "hints": {
         "redrawing": "重繪中…",
-        "switching": "切換中…"
+        "switching": "切換中…",
+        "copySuccess": "桌寵圖片已複製到剪貼簿。",
+        "saveSuccess": "桌寵圖片已儲存至 {path}。",
+        "imageUnavailable": "桌寵圖片尚未準備完成。"
       }
     },
     "preference": {
@@ -18,7 +21,9 @@
           "windowSettings": "視窗設定",
           "passThrough": "視窗穿透",
           "alwaysOnTop": "視窗置頂",
+          "gameMode": "遊戲模式",
           "keepInScreen": "保持在螢幕內",
+          "windowPosition": "視窗位置",
           "windowSize": "視窗尺寸",
           "windowRadius": "視窗圓角",
           "opacity": "不透明度",
@@ -26,7 +31,13 @@
           "behavior": "動作與表情",
           "autoReleaseDelay": "按鍵自動釋放延遲",
           "hideOnHover": "滑鼠游標移入隱藏",
-          "maxFPS": "最大幀率"
+          "maxFPS": "最大幀率",
+          "idleRendering": "閒置低功耗渲染",
+          "idleAfter": "進入閒置模式等待時間",
+          "idleFPS": "閒置幀率",
+          "localStats": "本機統計",
+          "inputCount": "輸入次數",
+          "interactionCount": "桌寵互動次數"
         },
         "hints": {
           "mirrorMode": "啟用後，模型將水平鏡像翻轉。",
@@ -36,11 +47,25 @@
           "behavior": "啟用後，可以配置和觸發模型的動作與表情。",
           "passThrough": "啟用後，視窗不影響對其他應用程式的操作。",
           "alwaysOnTop": "啟用後，視窗始終顯示在其他應用程式上方。",
+          "gameMode": "讓桌寵保持置頂並允許滑鼠穿透，可透過系統匣選單或快速鍵關閉。",
           "keepInScreen": "啟用後，視窗會自動調整位置，防止超出螢幕邊界。",
+          "windowPosition": "將桌寵快速放置到目前螢幕的指定位置，或移動到下一台顯示器。",
           "windowSize": "將滑鼠游標移至視窗邊緣，或按住 Shift 並右鍵拖曳，也可以調整視窗大小。",
           "autoReleaseDelay": "由於 Windows 下部份系統級按鍵無法擷取釋放事件，超時後將自動視為已釋放。",
           "hideOnHover": "啟用後，滑鼠游標懸停視窗時自動隱藏。可設定延遲時間，0 表示立即隱藏。",
-          "maxFPS": "限制模型渲染的最大幀率，降低幀率可以減少 CPU/GPU 佔用。"
+          "maxFPS": "限制模型渲染的最大幀率，降低幀率可以減少 CPU/GPU 佔用。",
+          "idleRendering": "一段時間沒有輸入後，自動降低渲染幀率以節省資源。",
+          "idleAfter": "連續多少秒沒有輸入後進入低功耗渲染。",
+          "idleFPS": "桌寵閒置時使用的渲染幀率。"
+        },
+        "buttons": {
+          "topLeft": "左上角",
+          "topRight": "右上角",
+          "bottomLeft": "左下角",
+          "bottomRight": "右下角",
+          "center": "置中",
+          "nextMonitor": "下一台顯示器",
+          "resetStats": "重設統計"
         }
       },
       "general": {
@@ -88,13 +113,17 @@
       "model": {
         "title": "模型管理",
         "labels": {
-          "deleteModel": "刪除模型"
+          "deleteModel": "刪除模型",
+          "favorite": "加入收藏",
+          "unfavorite": "取消收藏",
+          "randomFavorite": "隨機收藏模型"
         },
         "hints": {
           "deleteSuccess": "刪除成功",
           "deleteModel": "您確定要刪除此模型嗎？",
           "importSuccess": "匯入成功",
-          "clickOrDragToImport": "點擊或拖曳至此區域匯入"
+          "clickOrDragToImport": "點擊或拖曳至此區域匯入",
+          "noFavorites": "收藏模型後，就可以在它們之間隨機切換。"
         },
         "tooltips": {
           "createModel": "製作模型",
@@ -119,14 +148,16 @@
           "togglePreferences": "開啟偏好設定",
           "mirrorMode": "鏡像模式",
           "passThrough": "視窗穿透",
-          "alwaysOnTop": "視窗置頂"
+          "alwaysOnTop": "視窗置頂",
+          "gameMode": "遊戲模式"
         },
         "hints": {
           "toggleCat": "切換貓咪視窗的顯示與隱藏。",
           "togglePreferences": "切換偏好設定視窗的顯示與隱藏。",
           "mirrorMode": "切換貓咪的鏡像模式。",
           "passThrough": "切換貓咪視窗是否可穿透。",
-          "alwaysOnTop": "切換貓咪視窗是否置頂。"
+          "alwaysOnTop": "切換貓咪視窗是否置頂。",
+          "gameMode": "切換保持置頂且滑鼠穿透的遊戲模式。"
         }
       },
       "about": {
@@ -181,6 +212,16 @@
         "hideCat": "隱藏貓咪",
         "showCat": "顯示貓咪",
         "passThrough": "視窗穿透",
+        "gameMode": "遊戲模式",
+        "windowPosition": "視窗位置",
+        "topLeft": "左上角",
+        "topRight": "右上角",
+        "bottomLeft": "左下角",
+        "bottomRight": "右下角",
+        "center": "置中",
+        "nextMonitor": "下一台顯示器",
+        "copyPetImage": "複製桌寵圖片",
+        "savePetImage": "儲存桌寵圖片…",
         "windowSize": "視窗尺寸",
         "opacity": "不透明度",
         "restartApp": "重啟應用程式",

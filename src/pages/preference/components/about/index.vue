@@ -2,7 +2,7 @@
 import { getTauriVersion } from '@tauri-apps/api/app'
 import { appLogDir } from '@tauri-apps/api/path'
 import { writeText } from '@tauri-apps/plugin-clipboard-manager'
-import { openPath } from '@tauri-apps/plugin-opener'
+import { openPath, openUrl } from '@tauri-apps/plugin-opener'
 import { arch, platform, version } from '@tauri-apps/plugin-os'
 import { Button, message } from 'antdv-next'
 import { onMounted, ref } from 'vue'
@@ -35,6 +35,10 @@ async function copyInfo() {
 
   message.success(t('pages.preference.about.hints.copySuccess'))
 }
+
+function feedbackIssue() {
+  openUrl(`${GITHUB_LINK}/issues/new/choose`)
+}
 </script>
 
 <template>
@@ -54,6 +58,13 @@ async function copyInfo() {
     </ProListItem>
 
     <ProListItem :title="$t('pages.preference.about.labels.openSource')">
+      <Button
+        danger
+        @click="feedbackIssue"
+      >
+        {{ $t('pages.preference.about.buttons.feedbackIssues') }}
+      </Button>
+
       <template #description>
         <a :href="GITHUB_LINK">
           {{ GITHUB_LINK }}

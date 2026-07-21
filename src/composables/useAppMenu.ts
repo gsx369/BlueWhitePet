@@ -1,10 +1,11 @@
+import { emit } from '@tauri-apps/api/event'
 import { CheckMenuItem, MenuItem, PredefinedMenuItem, Submenu } from '@tauri-apps/api/menu'
 import { exit, relaunch } from '@tauri-apps/plugin-process'
 import { range } from 'es-toolkit'
 import { useI18n } from 'vue-i18n'
 
-import { WINDOW_LABEL } from '@/constants'
-import { showWindow } from '@/plugins/window'
+import { LISTEN_KEY, WINDOW_LABEL } from '@/constants'
+import { positionMainWindow, showWindow } from '@/plugins/window'
 import { useCatStore } from '@/stores/cat'
 import { isMac } from '@/utils/platform'
 
@@ -60,6 +61,24 @@ export function useAppMenu() {
     return Promise.all(items)
   }
 
+  const getPositionMenuItems = () => {
+    const placements = [
+      ['topLeft', 'top-left'],
+      ['topRight', 'top-right'],
+      ['bottomLeft', 'bottom-left'],
+      ['bottomRight', 'bottom-right'],
+      ['center', 'center'],
+      ['nextMonitor', 'next-monitor'],
+    ] as const
+
+    return Promise.all(placements.map(([label, placement]) => {
+      return MenuItem.new({
+        text: t(`composables.useAppMenu.labels.${label}`),
+        action: () => positionMainWindow(placement),
+      })
+    }))
+  }
+
   const getBaseMenu = async () => {
     return await Promise.all([
       MenuItem.new({
@@ -81,6 +100,13 @@ export function useAppMenu() {
           catStore.window.passThrough = !catStore.window.passThrough
         },
       }),
+      CheckMenuItem.new({
+        text: t('composables.useAppMenu.labels.gameMode'),
+        checked: catStore.window.gameMode,
+        action: () => {
+          catStore.window.gameMode = !catStore.window.gameMode
+        },
+      }),
       Submenu.new({
         text: t('composables.useAppMenu.labels.windowSize'),
         items: await getScaleMenuItems(),
@@ -88,6 +114,19 @@ export function useAppMenu() {
       Submenu.new({
         text: t('composables.useAppMenu.labels.opacity'),
         items: await getOpacityMenuItems(),
+      }),
+      Submenu.new({
+        text: t('composables.useAppMenu.labels.windowPosition'),
+        items: await getPositionMenuItems(),
+      }),
+      PredefinedMenuItem.new({ item: 'Separator' }),
+      MenuItem.new({
+        text: t('composables.useAppMenu.labels.copyPetImage'),
+        action: () => emit(LISTEN_KEY.COPY_PET_IMAGE),
+      }),
+      MenuItem.new({
+        text: t('composables.useAppMenu.labels.savePetImage'),
+        action: () => emit(LISTEN_KEY.SAVE_PET_IMAGE),
       }),
     ])
   }

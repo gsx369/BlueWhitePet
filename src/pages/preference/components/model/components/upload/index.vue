@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { appDataDir } from '@tauri-apps/api/path'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { open } from '@tauri-apps/plugin-dialog'
-import { readDir } from '@tauri-apps/plugin-fs'
+import { exists, readDir, remove } from '@tauri-apps/plugin-fs'
 import { message } from 'antdv-next'
 import { nanoid } from 'nanoid'
 import { onMounted, ref, useTemplateRef, watch } from 'vue'
@@ -58,6 +58,8 @@ async function handleUpload() {
 
 watch(selectPaths, async (paths) => {
   for await (const fromPath of paths) {
+    let toPath: string | undefined
+
     try {
       const id = nanoid()
 
@@ -75,14 +77,14 @@ watch(selectPaths, async (paths) => {
         }
       }
 
-      const toPath = join(await appDataDir(), 'custom-models', id)
+      toPath = join(await appDataDir(), 'custom-models', id)
 
       await invoke(INVOKE_KEY.COPY_DIR, {
         fromPath,
         toPath,
       })
 
-      modelStore.models.push({
+      await modelStore.addCustomModel({
         id,
         path: toPath,
         mode,
@@ -92,6 +94,10 @@ watch(selectPaths, async (paths) => {
 
       message.success(t('pages.preference.model.hints.importSuccess'))
     } catch (error) {
+      if (toPath && await exists(toPath)) {
+        await remove(toPath, { recursive: true }).catch(() => {})
+      }
+
       message.error(String(error))
     }
   }

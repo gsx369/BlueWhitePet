@@ -1,4 +1,4 @@
-export const GITHUB_LINK = 'https://github.com/ayangweb/BongoCat'
+export const GITHUB_LINK = 'https://github.com/gsx369/BlueWhitePet'
 
 export const LISTEN_KEY = {
   SHOW_WINDOW: 'show-window',
@@ -7,6 +7,10 @@ export const LISTEN_KEY = {
   GAMEPAD_CHANGED: 'gamepad-changed',
   START_MOTION: 'start-motion',
   SET_EXPRESSION: 'set-expression',
+  POSITION_MAIN_WINDOW: 'position-main-window',
+  COPY_PET_IMAGE: 'copy-pet-image',
+  SAVE_PET_IMAGE: 'save-pet-image',
+  RESET_PET_STATS: 'reset-pet-stats',
 }
 
 export const INVOKE_KEY = {

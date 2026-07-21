@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "presetKey": "blue-white",
+  "displayName": "蓝白猫 · 静态互动",
+  "renderer": "image",
+  "mode": "standard",
+  "cover": "resources/cover.png",
+  "interactionBounds": { "x": 0.21, "y": 0.33, "width": 0.62, "height": 0.58 },
+  "bubbleBounds": { "x": 0.04, "y": 0.02, "width": 0.92, "height": 0.18 },
+  "order": 10,
+  "image": {
+    "src": "/characters/blue-white-cat.png",
+    "width": 420,
+    "height": 520
+  }
+}

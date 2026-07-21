@@ -14,6 +14,31 @@ import { i18n } from '@/locales'
 import { join } from './path'
 
 Config.MouseFollow = false
+const MODEL_LOAD_TIMEOUT = 15_000
+
+function splitModelPath(value: string, label: string) {
+  if (!value || value.startsWith('/') || value.startsWith('\\') || /^[a-z]:[\\/]/i.test(value)) {
+    throw new Error(`Invalid ${label} path: ${value}`)
+  }
+
+  return value.split(/[\\/]/).filter(segment => segment && segment !== '.')
+}
+
+function resolveModelAssetPath(root: string, baseSegments: string[], value: string) {
+  const segments = [...baseSegments]
+
+  for (const segment of splitModelPath(value, 'model asset')) {
+    if (segment === '..') {
+      if (segments.length === 0) throw new Error(`Model asset escapes its package: ${value}`)
+
+      segments.pop()
+    } else {
+      segments.push(segment)
+    }
+  }
+
+  return join(root, ...segments)
+}
 
 class Live2d {
   private app: Application | null = null
@@ -25,33 +50,40 @@ class Live2d {
     if (this.app) return
 
     const view = document.getElementById('live2dCanvas') as HTMLCanvasElement
-    const resizeTarget = view.parentElement ?? window
-
     this.app = new Application()
 
     return this.app.init({
       view,
-      resizeTo: resizeTarget,
+      resizeTo: window,
       backgroundAlpha: 0,
       autoDensity: true,
       resolution: devicePixelRatio,
     })
   }
 
-  public async load(path: string) {
+  public async load(path: string, entry?: string, shouldCommit: () => boolean = () => true) {
     await this.initApp()
 
     this.destroy()
 
-    const files = await readDir(path)
+    let modelFileName = entry
 
-    const modelFile = files.find(file => file.name.endsWith('.model3.json'))
+    if (!modelFileName) {
+      const files = await readDir(path)
 
-    if (!modelFile) {
-      throw new Error(i18n.global.t('utils.live2d.hints.notFound'))
+      modelFileName = files.find(file => file.name.endsWith('.model3.json'))?.name
     }
 
-    const modelPath = join(path, modelFile.name)
+    if (!modelFileName) throw new Error(i18n.global.t('utils.live2d.hints.notFound'))
+
+    const modelPathSegments = splitModelPath(modelFileName, 'model entry')
+
+    if (modelPathSegments.includes('..')) {
+      throw new Error(`Model entry escapes its package: ${modelFileName}`)
+    }
+
+    const modelDirectorySegments = modelPathSegments.slice(0, -1)
+    const modelPath = join(path, ...modelPathSegments)
 
     const modelJSON = JSON5.parse(await readTextFile(modelPath))
 
@@ -60,22 +92,43 @@ class Live2d {
     })
 
     modelSetting.redirectPath(({ file }) => {
-      return convertFileSrc(join(path, file))
+      return convertFileSrc(resolveModelAssetPath(path, modelDirectorySegments, file))
     })
 
-    this.model = new Live2DSprite({
+    const model = new Live2DSprite({
       modelSetting,
       ticker: Ticker.shared,
     })
 
-    this.app?.stage.addChild(this.model)
+    this.app?.stage.addChild(model)
 
-    await this.model.ready
+    let timeout: ReturnType<typeof setTimeout> | undefined
 
-    const { width, height } = this.model
+    try {
+      await Promise.race([
+        model.ready,
+        new Promise<never>((_, reject) => {
+          timeout = setTimeout(() => reject(new Error('Live2D model loading timed out')), MODEL_LOAD_TIMEOUT)
+        }),
+      ])
+    } catch (error) {
+      model.destroy()
+      throw error
+    } finally {
+      clearTimeout(timeout)
+    }
 
-    const motions = groupBy(this.model.getMotions(), 'group')
-    const expressions = this.model.getExpressions()
+    if (!shouldCommit()) {
+      model.destroy()
+      throw new Error('Live2D model load cancelled')
+    }
+
+    this.model = model
+
+    const { width, height } = model
+
+    const motions = groupBy(model.getMotions(), 'group')
+    const expressions = model.getExpressions()
 
     return {
       width,
@@ -97,17 +150,13 @@ class Live2d {
     if (!this.model) return
 
     const { width, height } = modelSize
-    const view = document.getElementById('live2dCanvas') as HTMLCanvasElement | null
-    const viewportWidth = view?.clientWidth ?? innerWidth
-    const viewportHeight = view?.clientHeight ?? innerHeight
-
-    const scaleX = viewportWidth / width
-    const scaleY = viewportHeight / height
+    const scaleX = innerWidth / width
+    const scaleY = innerHeight / height
     const scale = Math.min(scaleX, scaleY)
 
     this.model.scale.set(scale)
-    this.model.x = viewportWidth / 2
-    this.model.y = viewportHeight / 2
+    this.model.x = innerWidth / 2
+    this.model.y = innerHeight / 2
     this.model.anchor.set(0.5)
   }
 
@@ -136,6 +185,19 @@ class Live2d {
 
   public setMaxFPS(fps: number) {
     Ticker.shared.maxFPS = fps
+  }
+
+  public captureCanvas() {
+    if (!this.app || !this.model) return
+
+    // Pixi's extract system renders into an intermediate target before reading
+    // pixels, so capture works even when WebGL preserveDrawingBuffer is false.
+    return this.app.renderer.extract.canvas({
+      target: this.app.stage,
+      resolution: this.app.renderer.resolution,
+      clearColor: [0, 0, 0, 0],
+      antialias: true,
+    }) as HTMLCanvasElement
   }
 }
 

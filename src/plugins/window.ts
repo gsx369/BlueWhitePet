@@ -7,6 +7,7 @@ import type { WINDOW_LABEL } from '../constants'
 import { LISTEN_KEY } from '../constants'
 
 export type WindowLabel = typeof WINDOW_LABEL[keyof typeof WINDOW_LABEL]
+export type WindowPlacement = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center' | 'next-monitor'
 
 const COMMAND = {
   SHOW_WINDOW: 'plugin:custom-window|show_window',
@@ -51,4 +52,8 @@ export async function toggleWindowVisible(label?: WindowLabel) {
 
 export async function setTaskbarVisibility(visible: boolean) {
   invoke(COMMAND.SET_TASKBAR_VISIBILITY, { visible })
+}
+
+export function positionMainWindow(placement: WindowPlacement) {
+  return emit(LISTEN_KEY.POSITION_MAIN_WINDOW, placement)
 }

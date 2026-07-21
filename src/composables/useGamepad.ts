@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { computed, reactive, watch } from 'vue'
 
 import { INVOKE_KEY, LISTEN_KEY } from '@/constants'
+import { useCatStore } from '@/stores/cat'
 import { useModelStore } from '@/stores/model'
 import live2d from '@/utils/live2d'
 
@@ -33,7 +34,9 @@ interface Sticks {
 const INITIAL_STICK_STATE: StickState = { x: 0, y: 0, moved: false, pressed: false }
 
 export function useGamepad() {
+  const catStore = useCatStore()
   const modelStore = useModelStore()
+  const activeButtons = new Set<string>()
   const { handlePress, handleRelease, handleAxisChange } = useModel()
   const sticks = reactive<Sticks>({
     left: { ...INITIAL_STICK_STATE },
@@ -66,7 +69,18 @@ export function useGamepad() {
   }, { deep: true })
 
   useTauriListen<GamepadEvent>(LISTEN_KEY.GAMEPAD_CHANGED, ({ payload }) => {
-    const { name, value } = payload
+    const { kind, name, value } = payload
+
+    if (kind === 'ButtonChanged') {
+      if (value !== 0) {
+        catStore.markActivity(!activeButtons.has(name))
+        activeButtons.add(name)
+      } else {
+        activeButtons.delete(name)
+      }
+    } else if (value !== 0) {
+      catStore.markActivity()
+    }
 
     switch (name) {
       case 'LeftStickX':

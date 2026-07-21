@@ -3,7 +3,10 @@
     "main": {
       "hints": {
         "redrawing": "Đang đổi kích thước...",
-        "switching": "Đang chuyển đổi..."
+        "switching": "Đang chuyển đổi...",
+        "copySuccess": "Đã sao chép ảnh thú cưng vào bảng nhớ tạm.",
+        "saveSuccess": "Đã lưu ảnh thú cưng vào {path}.",
+        "imageUnavailable": "Ảnh thú cưng chưa sẵn sàng."
       }
     },
     "preference": {
@@ -18,7 +21,9 @@
           "windowSettings": "Cài đặt Cửa sổ",
           "passThrough": "Click xuyên",
           "alwaysOnTop": "Luôn trên cùng",
+          "gameMode": "Chế độ chơi game",
           "keepInScreen": "Giữ trong màn hình",
+          "windowPosition": "Vị trí cửa sổ",
           "windowSize": "Kích thước",
           "windowRadius": "Độ bo tròn cửa sổ",
           "opacity": "Độ mờ",
@@ -26,7 +31,13 @@
           "behavior": "Hành động và Biểu cảm",
           "autoReleaseDelay": "Độ trễ tự động nhả phím",
           "hideOnHover": "Ẩn khi di chuột",
-          "maxFPS": "Tốc độ khung hình tối đa"
+          "maxFPS": "Tốc độ khung hình tối đa",
+          "idleRendering": "Render tiết kiệm khi nhàn rỗi",
+          "idleAfter": "Chuyển sang nhàn rỗi sau",
+          "idleFPS": "Tốc độ khung hình khi nhàn rỗi",
+          "localStats": "Thống kê cục bộ",
+          "inputCount": "Số sự kiện nhập",
+          "interactionCount": "Số lần tương tác với thú cưng"
         },
         "hints": {
           "mirrorMode": "Bật để lật ngang mô hình.",
@@ -36,11 +47,25 @@
           "behavior": "Khi bật, các hành động và biểu cảm có thể được cấu hình và kích hoạt.",
           "passThrough": "Bật để cửa sổ không ảnh hưởng đến thao tác trên ứng dụng khác.",
           "alwaysOnTop": "Bật để cửa sổ luôn nằm trên ứng dụng khác.",
+          "gameMode": "Giữ thú cưng trên cùng và cho phép nhấp xuyên cửa sổ. Tắt bằng menu khay hệ thống hoặc phím tắt.",
           "keepInScreen": "Khi bật, cửa sổ sẽ tự động giữ trong ranh giới màn hình.",
+          "windowPosition": "Nhanh chóng đặt thú cưng trên màn hình hiện tại hoặc chuyển sang màn hình kế tiếp.",
           "windowSize": "Di chuyển chuột đến mép cửa sổ hoặc giữ Shift và kéo chuột phải để thay đổi kích thước.",
           "autoReleaseDelay": "Do Windows không bắt được sự kiện nhả của một số phím hệ thống, các phím đó sẽ được tự động xem như đã nhả sau khi hết thời gian chờ.",
           "hideOnHover": "Khi bật, cửa sổ tự động ẩn khi chuột di vào. Có thể đặt thời gian trễ, 0 nghĩa là ẩn ngay.",
-          "maxFPS": "Giới hạn tốc độ khung hình tối đa cho việc render mô hình. Giảm tốc độ khung hình có thể giảm mức sử dụng CPU/GPU."
+          "maxFPS": "Giới hạn tốc độ khung hình tối đa cho việc render mô hình. Giảm tốc độ khung hình có thể giảm mức sử dụng CPU/GPU.",
+          "idleRendering": "Tự động giảm tốc độ render sau một khoảng thời gian không có đầu vào để tiết kiệm tài nguyên.",
+          "idleAfter": "Số giây không có đầu vào trước khi bắt đầu render tiết kiệm.",
+          "idleFPS": "Tốc độ khung hình được dùng khi thú cưng nhàn rỗi."
+        },
+        "buttons": {
+          "topLeft": "Góc trên trái",
+          "topRight": "Góc trên phải",
+          "bottomLeft": "Góc dưới trái",
+          "bottomRight": "Góc dưới phải",
+          "center": "Ở giữa",
+          "nextMonitor": "Màn hình kế tiếp",
+          "resetStats": "Đặt lại thống kê"
         }
       },
       "general": {
@@ -88,13 +113,17 @@
       "model": {
         "title": "Mô hình",
         "labels": {
-          "deleteModel": "Xóa mô hình"
+          "deleteModel": "Xóa mô hình",
+          "favorite": "Thêm vào yêu thích",
+          "unfavorite": "Bỏ khỏi yêu thích",
+          "randomFavorite": "Mẫu yêu thích ngẫu nhiên"
         },
         "hints": {
           "deleteSuccess": "Xóa thành công",
           "deleteModel": "Bạn chắc muốn xóa mô hình này?",
           "importSuccess": "Nhập thành công",
-          "clickOrDragToImport": "Nhấp hoặc kéo tệp vào đây"
+          "clickOrDragToImport": "Nhấp hoặc kéo tệp vào đây",
+          "noFavorites": "Thêm mô hình vào yêu thích để chuyển đổi ngẫu nhiên giữa chúng."
         },
         "tooltips": {
           "createModel": "Tạo mô hình",
@@ -119,14 +148,16 @@
           "togglePreferences": "Mở Tùy chỉnh",
           "mirrorMode": "Chế độ gương",
           "passThrough": "Click xuyên",
-          "alwaysOnTop": "Luôn trên cùng"
+          "alwaysOnTop": "Luôn trên cùng",
+          "gameMode": "Chế độ chơi game"
         },
         "hints": {
           "toggleCat": "Bật/Tắt cửa sổ mèo.",
           "togglePreferences": "Bật/Tắt cửa sổ tùy chỉnh.",
           "mirrorMode": "Bật/Tắt chế độ gương.",
           "passThrough": "Bật/Tắt cho phép click xuyên cửa sổ mèo.",
-          "alwaysOnTop": "Bật/Tắt luôn giữ cửa sổ mèo trên cùng."
+          "alwaysOnTop": "Bật/Tắt luôn giữ cửa sổ mèo trên cùng.",
+          "gameMode": "Bật/Tắt chế độ chơi game luôn trên cùng và cho phép nhấp xuyên."
         }
       },
       "about": {
@@ -181,6 +212,16 @@
         "hideCat": "Ẩn Mèo",
         "showCat": "Hiện Mèo",
         "passThrough": "Click xuyên",
+        "gameMode": "Chế độ chơi game",
+        "windowPosition": "Vị trí cửa sổ",
+        "topLeft": "Góc trên trái",
+        "topRight": "Góc trên phải",
+        "bottomLeft": "Góc dưới trái",
+        "bottomRight": "Góc dưới phải",
+        "center": "Ở giữa",
+        "nextMonitor": "Màn hình kế tiếp",
+        "copyPetImage": "Sao chép ảnh thú cưng",
+        "savePetImage": "Lưu ảnh thú cưng...",
         "windowSize": "Kích thước",
         "opacity": "Độ mờ",
         "restartApp": "Khởi động lại",

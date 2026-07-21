@@ -24,7 +24,12 @@ export function useTray() {
   const { getBaseMenu, getExitMenu } = useAppMenu()
   const { t } = useI18n()
 
-  watch([() => catStore.window.visible, () => catStore.window.passThrough, () => generalStore.appearance.language], () => {
+  watch([
+    () => catStore.window.visible,
+    () => catStore.window.passThrough,
+    () => catStore.window.gameMode,
+    () => generalStore.appearance.language,
+  ], () => {
     updateTrayMenu()
   })
 

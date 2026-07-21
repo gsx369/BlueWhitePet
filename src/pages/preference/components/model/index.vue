@@ -3,7 +3,7 @@ import { convertFileSrc } from '@tauri-apps/api/core'
 import { remove } from '@tauri-apps/plugin-fs'
 import { revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useElementSize } from '@vueuse/core'
-import { Card, Masonry, message, Popconfirm } from 'antdv-next'
+import { Button, Card, Masonry, message, Popconfirm } from 'antdv-next'
 import { computed, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -43,6 +43,20 @@ function handleToggle(nextModel: Model) {
   modelStore.currentModel = nextModel
 }
 
+function getDisplayName(model: Model) {
+  return model.displayName ?? model.presetKey ?? model.id
+}
+
+function getCoverPath(model: Model) {
+  return convertFileSrc(join(model.path, model.cover ?? 'resources/cover.png'))
+}
+
+function handleRandomFavorite() {
+  if (modelStore.selectRandomFavorite()) return
+
+  message.info(t('pages.preference.model.hints.noFavorites'))
+}
+
 async function handleDelete(item: Model) {
   const { id, path } = item
 
@@ -54,6 +68,7 @@ async function handleDelete(item: Model) {
     message.error(String(error))
   } finally {
     modelStore.models = modelStore.models.filter(item => item.id !== id)
+    modelStore.favoriteModelIds = modelStore.favoriteModelIds.filter(modelId => modelId !== id)
 
     if (id === modelStore.currentModel?.id) {
       modelStore.currentModel = modelStore.models[0]
@@ -63,6 +78,13 @@ async function handleDelete(item: Model) {
 </script>
 
 <template>
+  <div class="mb-4 flex justify-end">
+    <Button @click="handleRandomFavorite">
+      <i class="i-lucide:shuffle mr-1" />
+      {{ $t('pages.preference.model.labels.randomFavorite') }}
+    </Button>
+  </div>
+
   <Masonry
     :columns="{ xs: 3, lg: 4, xxl: 6 }"
     :gutter="16"
@@ -85,15 +107,29 @@ async function handleDelete(item: Model) {
       >
         <template #cover>
           <img
-            alt="example"
-            :src="convertFileSrc(join(data.path, 'resources', 'cover.png'))"
+            :alt="getDisplayName(data)"
+            :src="getCoverPath(data)"
           >
         </template>
+
+        <div
+          class="truncate text-center text-sm"
+          :title="getDisplayName(data)"
+        >
+          {{ getDisplayName(data) }}
+        </div>
 
         <template #actions>
           <i
             class="i-lucide:circle-check"
             :class="{ 'text-success': data.id === modelStore.currentModel?.id }"
+          />
+
+          <i
+            class="i-lucide:star"
+            :class="{ 'text-warning fill-current': modelStore.isFavorite(data.id) }"
+            :title="$t(`pages.preference.model.labels.${modelStore.isFavorite(data.id) ? 'unfavorite' : 'favorite'}`)"
+            @click.stop="modelStore.toggleFavorite(data.id)"
           />
 
           <i

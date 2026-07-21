@@ -3,7 +3,10 @@
     "main": {
       "hints": {
         "redrawing": "Redimensionando...",
-        "switching": "Alternando..."
+        "switching": "Alternando...",
+        "copySuccess": "Imagem do mascote copiada para a área de transferência.",
+        "saveSuccess": "Imagem do mascote salva em {path}.",
+        "imageUnavailable": "A imagem do mascote ainda não está pronta."
       }
     },
     "preference": {
@@ -18,7 +21,9 @@
           "windowSettings": "Configurações da Janela",
           "passThrough": "Janela Transparente",
           "alwaysOnTop": "Sempre no Topo",
+          "gameMode": "Modo de Jogo",
           "keepInScreen": "Manter na Tela",
+          "windowPosition": "Posição da Janela",
           "windowSize": "Tamanho da Janela",
           "windowRadius": "Raio da Janela",
           "opacity": "Opacidade",
@@ -26,7 +31,13 @@
           "behavior": "Movimentos e Expressões",
           "autoReleaseDelay": "Atraso de Liberação Automática",
           "hideOnHover": "Ocultar ao Passar o Mouse",
-          "maxFPS": "Taxa Máxima de Quadros"
+          "maxFPS": "Taxa Máxima de Quadros",
+          "idleRendering": "Renderização Econômica em Inatividade",
+          "idleAfter": "Entrar no Modo Inativo Após",
+          "idleFPS": "Taxa de Quadros em Inatividade",
+          "localStats": "Estatísticas Locais",
+          "inputCount": "Eventos de Entrada",
+          "interactionCount": "Interações com o Mascote"
         },
         "hints": {
           "mirrorMode": "Quando ativado, o modelo será invertido horizontalmente.",
@@ -36,11 +47,25 @@
           "behavior": "Quando ativado, movimentos e expressões podem ser configurados e acionados.",
           "passThrough": "Quando ativado, a janela não afetará operações em outros aplicativos.",
           "alwaysOnTop": "Quando ativado, a janela sempre ficará acima de outros aplicativos.",
+          "gameMode": "Mantém o mascote no topo e permite que cliques atravessem a janela. Desative pelo menu da bandeja ou por um atalho.",
           "keepInScreen": "Quando ativado, a janela permanece automaticamente dentro dos limites da tela.",
+          "windowPosition": "Posicione rapidamente o mascote na tela atual ou mova-o para o próximo monitor.",
           "windowSize": "Mova o mouse para a borda da janela ou segure Shift e arraste com o botão direito para redimensionar.",
           "autoReleaseDelay": "Devido ao Windows não capturar eventos de liberação de certas teclas de nível do sistema, elas serão automaticamente tratadas como liberadas após um tempo limite.",
           "hideOnHover": "Quando ativado, a janela se oculta automaticamente ao passar o mouse. Você pode definir um atraso; 0 significa ocultar imediatamente.",
-          "maxFPS": "Limitar a taxa máxima de quadros para renderização do modelo. Reduzir a taxa de quadros pode diminuir o uso de CPU/GPU."
+          "maxFPS": "Limitar a taxa máxima de quadros para renderização do modelo. Reduzir a taxa de quadros pode diminuir o uso de CPU/GPU.",
+          "idleRendering": "Reduz automaticamente a taxa de quadros após um período sem entradas para economizar recursos.",
+          "idleAfter": "Quantidade de segundos sem entradas antes de iniciar a renderização econômica.",
+          "idleFPS": "Taxa de quadros usada enquanto o mascote está inativo."
+        },
+        "buttons": {
+          "topLeft": "Canto Superior Esquerdo",
+          "topRight": "Canto Superior Direito",
+          "bottomLeft": "Canto Inferior Esquerdo",
+          "bottomRight": "Canto Inferior Direito",
+          "center": "Centro",
+          "nextMonitor": "Próximo Monitor",
+          "resetStats": "Redefinir Estatísticas"
         }
       },
       "general": {
@@ -88,13 +113,17 @@
       "model": {
         "title": "Modelo",
         "labels": {
-          "deleteModel": "Excluir modelo"
+          "deleteModel": "Excluir modelo",
+          "favorite": "Adicionar aos Favoritos",
+          "unfavorite": "Remover dos Favoritos",
+          "randomFavorite": "Favorito Aleatório"
         },
         "hints": {
           "deleteSuccess": "Excluído com sucesso",
           "deleteModel": "Tem certeza de que deseja excluir este modelo?",
           "importSuccess": "Importação bem-sucedida",
-          "clickOrDragToImport": "Clique ou arraste para importar"
+          "clickOrDragToImport": "Clique ou arraste para importar",
+          "noFavorites": "Adicione modelos aos favoritos para alternar entre eles aleatoriamente."
         },
         "tooltips": {
           "createModel": "Criar modelo",
@@ -119,14 +148,16 @@
           "togglePreferences": "Abrir Preferências",
           "mirrorMode": "Modo Espelho",
           "passThrough": "Janela Transparente",
-          "alwaysOnTop": "Sempre no Topo"
+          "alwaysOnTop": "Sempre no Topo",
+          "gameMode": "Modo de Jogo"
         },
         "hints": {
           "toggleCat": "Alternar a visibilidade da janela do gato.",
           "togglePreferences": "Alternar a visibilidade da janela de preferências.",
           "mirrorMode": "Alternar o modo espelho do gato.",
           "passThrough": "Alternar se a janela do gato é clicável.",
-          "alwaysOnTop": "Alternar se a janela do gato permanece no topo."
+          "alwaysOnTop": "Alternar se a janela do gato permanece no topo.",
+          "gameMode": "Alternar o modo de jogo com janela no topo e cliques atravessando-a."
         }
       },
       "about": {
@@ -181,6 +212,16 @@
         "hideCat": "Ocultar Gato",
         "showCat": "Mostrar Gato",
         "passThrough": "Janela Transparente",
+        "gameMode": "Modo de Jogo",
+        "windowPosition": "Posição da Janela",
+        "topLeft": "Canto Superior Esquerdo",
+        "topRight": "Canto Superior Direito",
+        "bottomLeft": "Canto Inferior Esquerdo",
+        "bottomRight": "Canto Inferior Direito",
+        "center": "Centro",
+        "nextMonitor": "Próximo Monitor",
+        "copyPetImage": "Copiar Imagem do Mascote",
+        "savePetImage": "Salvar Imagem do Mascote...",
         "windowSize": "Tamanho da Janela",
         "opacity": "Opacidade",
         "restartApp": "Reiniciar",

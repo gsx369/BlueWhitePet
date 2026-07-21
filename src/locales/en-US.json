@@ -3,7 +3,10 @@
     "main": {
       "hints": {
         "redrawing": "Redrawing...",
-        "switching": "Switching..."
+        "switching": "Switching...",
+        "copySuccess": "Pet image copied to the clipboard.",
+        "saveSuccess": "Pet image saved to {path}.",
+        "imageUnavailable": "The pet image is not ready yet."
       }
     },
     "preference": {
@@ -18,7 +21,9 @@
           "windowSettings": "Window Settings",
           "passThrough": "Pass Through",
           "alwaysOnTop": "Always on Top",
+          "gameMode": "Game Mode",
           "keepInScreen": "Keep on Screen",
+          "windowPosition": "Window Position",
           "windowSize": "Window Size",
           "windowRadius": "Window Radius",
           "opacity": "Opacity",
@@ -26,7 +31,13 @@
           "behavior": "Motions and Expressions",
           "autoReleaseDelay": "Auto Release Delay",
           "hideOnHover": "Hide on Hover",
-          "maxFPS": "Max Frame Rate"
+          "maxFPS": "Max Frame Rate",
+          "idleRendering": "Idle Low-Power Rendering",
+          "idleAfter": "Enter Idle Mode After",
+          "idleFPS": "Idle Frame Rate",
+          "localStats": "Local Statistics",
+          "inputCount": "Input Events",
+          "interactionCount": "Pet Interactions"
         },
         "hints": {
           "mirrorMode": "When enabled, the model will be mirrored horizontally.",
@@ -36,11 +47,25 @@
           "behavior": "When enabled, motions and expressions can be configured and triggered.",
           "passThrough": "When enabled, clicks pass through the window without affecting it.",
           "alwaysOnTop": "When enabled, the window stays above all other windows.",
+          "gameMode": "Keeps the pet on top and lets clicks pass through. Use the tray menu or shortcut to turn it off.",
           "keepInScreen": "When enabled, the window automatically stays within the screen boundaries.",
+          "windowPosition": "Quickly place the pet on the current screen or move it to the next monitor.",
           "windowSize": "Move mouse to window edge, or hold Shift and right-drag to resize.",
           "autoReleaseDelay": "On Windows, some system keys cannot capture release events and will auto-release after timeout.",
           "hideOnHover": "When enabled, the window hides automatically on mouse hover. You can set a delay; 0 means hide immediately.",
-          "maxFPS": "Limit the maximum frame rate for model rendering. Lowering the frame rate can reduce CPU/GPU usage."
+          "maxFPS": "Limit the maximum frame rate for model rendering. Lowering the frame rate can reduce CPU/GPU usage.",
+          "idleRendering": "Automatically reduce the rendering frame rate after a period without input.",
+          "idleAfter": "How many seconds without input before low-power rendering starts.",
+          "idleFPS": "Frame rate used while the pet is idle."
+        },
+        "buttons": {
+          "topLeft": "Top Left",
+          "topRight": "Top Right",
+          "bottomLeft": "Bottom Left",
+          "bottomRight": "Bottom Right",
+          "center": "Center",
+          "nextMonitor": "Next Monitor",
+          "resetStats": "Reset Statistics"
         }
       },
       "general": {
@@ -88,13 +113,17 @@
       "model": {
         "title": "Model",
         "labels": {
-          "deleteModel": "Delete Model"
+          "deleteModel": "Delete Model",
+          "favorite": "Add to Favorites",
+          "unfavorite": "Remove from Favorites",
+          "randomFavorite": "Random Favorite"
         },
         "hints": {
           "deleteSuccess": "Deleted Successfully",
           "deleteModel": "Are you sure you want to delete this model?",
           "importSuccess": "Imported Successfully",
-          "clickOrDragToImport": "Click or drag here to import"
+          "clickOrDragToImport": "Click or drag here to import",
+          "noFavorites": "Add models to favorites to switch between them at random."
         },
         "tooltips": {
           "createModel": "Create Model",
@@ -119,14 +148,16 @@
           "togglePreferences": "Toggle Preferences",
           "mirrorMode": "Mirror Mode",
           "passThrough": "Pass Through",
-          "alwaysOnTop": "Always on Top"
+          "alwaysOnTop": "Always on Top",
+          "gameMode": "Game Mode"
         },
         "hints": {
           "toggleCat": "Toggle the visibility of the cat window.",
           "togglePreferences": "Toggle the visibility of the preferences window.",
           "mirrorMode": "Toggle the cat's mirror mode.",
           "passThrough": "Toggle whether the cat window is pass-through.",
-          "alwaysOnTop": "Toggle whether the cat window stays on top."
+          "alwaysOnTop": "Toggle whether the cat window stays on top.",
+          "gameMode": "Toggle always-on-top click-through game mode."
         }
       },
       "about": {
@@ -181,6 +212,16 @@
         "hideCat": "Hide Cat",
         "showCat": "Show Cat",
         "passThrough": "Pass Through",
+        "gameMode": "Game Mode",
+        "windowPosition": "Window Position",
+        "topLeft": "Top Left",
+        "topRight": "Top Right",
+        "bottomLeft": "Bottom Left",
+        "bottomRight": "Bottom Right",
+        "center": "Center",
+        "nextMonitor": "Next Monitor",
+        "copyPetImage": "Copy Pet Image",
+        "savePetImage": "Save Pet Image...",
         "windowSize": "Window Size",
         "opacity": "Opacity",
         "restartApp": "Restart App",

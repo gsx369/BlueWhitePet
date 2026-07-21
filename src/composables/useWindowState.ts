@@ -10,7 +10,6 @@ import { onMounted, ref, watch } from 'vue'
 import { WINDOW_LABEL } from '@/constants'
 import { useAppStore } from '@/stores/app'
 import { useCatStore } from '@/stores/cat'
-import { getCursorMonitor } from '@/utils/monitor'
 
 export type WindowState = Record<string, Partial<PhysicalPosition & PhysicalSize> | undefined>
 
@@ -33,25 +32,52 @@ export function useWindowState() {
   const clampToMonitor = useDebounceFn(async () => {
     if (label !== WINDOW_LABEL.MAIN || !catStore.window.keepInScreen) return
 
-    const monitor = await getCursorMonitor()
+    const [monitors, windowSize, windowPos] = await Promise.all([
+      availableMonitors(),
+      appWindow.outerSize(),
+      appWindow.outerPosition(),
+    ])
 
-    if (!monitor) return
+    if (monitors.length === 0) return
 
-    const { position: monitorPos, size: monitorSize } = monitor
-    const windowSize = await appWindow.outerSize()
-    const windowPos = await appWindow.outerPosition()
+    const windowCenter = {
+      x: windowPos.x + windowSize.width / 2,
+      y: windowPos.y + windowSize.height / 2,
+    }
+    const monitor = monitors.find(({ position, size }) => {
+      return windowCenter.x >= position.x
+        && windowCenter.x < position.x + size.width
+        && windowCenter.y >= position.y
+        && windowCenter.y < position.y + size.height
+    }) ?? monitors.reduce((nearest, candidate) => {
+      const nearestCenterX = nearest.position.x + nearest.size.width / 2
+      const nearestCenterY = nearest.position.y + nearest.size.height / 2
+      const candidateCenterX = candidate.position.x + candidate.size.width / 2
+      const candidateCenterY = candidate.position.y + candidate.size.height / 2
+      const nearestDistance = (windowCenter.x - nearestCenterX) ** 2
+        + (windowCenter.y - nearestCenterY) ** 2
+      const candidateDistance = (windowCenter.x - candidateCenterX) ** 2
+        + (windowCenter.y - candidateCenterY) ** 2
+
+      return candidateDistance < nearestDistance ? candidate : nearest
+    })
+    const { position: monitorPos, size: monitorSize } = monitor.workArea
 
     const minX = monitorPos.x
     const maxX = monitorPos.x + monitorSize.width - windowSize.width
     const minY = monitorPos.y
     const maxY = monitorPos.y + monitorSize.height - windowSize.height
 
-    const clampedX = Math.max(minX, Math.min(windowPos.x, maxX))
-    const clampedY = Math.max(minY, Math.min(windowPos.y, maxY))
+    const clampedX = maxX >= minX
+      ? Math.max(minX, Math.min(windowPos.x, maxX))
+      : minX + (monitorSize.width - windowSize.width) / 2
+    const clampedY = maxY >= minY
+      ? Math.max(minY, Math.min(windowPos.y, maxY))
+      : minY + (monitorSize.height - windowSize.height) / 2
 
     if (clampedX === windowPos.x && clampedY === windowPos.y) return
 
-    return appWindow.setPosition(new PhysicalPosition(clampedX, clampedY))
+    return appWindow.setPosition(new PhysicalPosition(Math.round(clampedX), Math.round(clampedY)))
   }, 500)
 
   watch(() => catStore.window.keepInScreen, clampToMonitor)

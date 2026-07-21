@@ -8,6 +8,8 @@ import { isNil, round } from 'es-toolkit'
 import { findKey, nth } from 'es-toolkit/compat'
 import { ref } from 'vue'
 
+import type { Model } from '@/stores/model'
+
 import { useCatStore } from '@/stores/cat'
 import { useModelStore } from '@/stores/model'
 import { getCursorMonitor } from '@/utils/monitor'
@@ -65,14 +67,19 @@ export function useModel() {
     return `${modelId}:expression:${index}`
   }
 
-  async function handleLoad() {
+  async function handleLoad(
+    model: Model | undefined = modelStore.currentModel,
+    shouldCommit: () => boolean = () => true,
+  ) {
     try {
-      if (!modelStore.currentModel) return
+      if (!model) return false
 
-      const { image, path, renderer = 'live2d' } = modelStore.currentModel
+      const { entry, image, path, renderer = 'live2d' } = model
 
       if (renderer === 'image' && image) {
         live2d.destroy()
+
+        if (!shouldCommit()) return false
 
         modelSize.value = {
           width: image.width,
@@ -81,12 +88,16 @@ export function useModel() {
         modelStore.currentMotions = []
         modelStore.currentExpressions = []
 
-        return
+        return true
       }
 
       await resolveResource(path)
 
-      const { width, height, motions, expressions } = await live2d.load(path)
+      if (!shouldCommit()) return false
+
+      const { width, height, motions, expressions } = await live2d.load(path, entry, shouldCommit)
+
+      if (!shouldCommit()) return false
 
       const nextMotions = Object.entries(motions)
 
@@ -94,9 +105,7 @@ export function useModel() {
       modelStore.currentMotions = nextMotions
       modelStore.currentExpressions = expressions
 
-      handleResize()
-
-      const modelId = modelStore.currentModel.id
+      const modelId = model.id
 
       const behaviorIds: string[] = []
 
@@ -119,8 +128,12 @@ export function useModel() {
 
         modelStore.shortcuts[id] = shortcut
       }
+
+      return true
     } catch (error) {
-      message.error(String(error))
+      if (shouldCommit()) message.error(String(error))
+
+      return false
     }
   }
 
