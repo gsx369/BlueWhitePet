@@ -7,6 +7,13 @@
         "copySuccess": "Pet image copied to the clipboard.",
         "saveSuccess": "Pet image saved to {path}.",
         "imageUnavailable": "The pet image is not ready yet."
+      },
+      "growth": {
+        "newReward": "New reward unlocked: {reward}",
+        "milestone": "Milestone reached at {count} effective interactions!",
+        "interactionUnit": "{count} interactions",
+        "lifetimeTotal": "Lifetime {count}",
+        "combo": "{count} combo"
       }
     },
     "preference": {
@@ -66,6 +73,63 @@
           "center": "Center",
           "nextMonitor": "Next Monitor",
           "resetStats": "Reset Statistics"
+        },
+        "growth": {
+          "labels": {
+            "interactionFeedback": "Interaction Feedback",
+            "interactionHUD": "Interaction Counter HUD",
+            "dialogueBubbles": "Dialogue Bubbles",
+            "rewardNotifications": "Reward Notifications",
+            "growthAndCollection": "Growth & Collection",
+            "lifetimeInteractions": "Lifetime Effective Interactions",
+            "nextMilestone": "Next Milestone",
+            "nextRandomCheck": "Next Surprise Check",
+            "pityStatus": "Surprise Guarantee",
+            "collectionRewards": "Reward Collection",
+            "dropHistory": "Recent Rewards",
+            "collected": "Collected"
+          },
+          "hints": {
+            "interactionHUD": "Briefly show +1, combo, and the total beside the pet after an effective interaction.",
+            "dialogueBubbles": "Show short dialogue bubbles during pet interactions.",
+            "rewardNotifications": "Show a notice when a milestone or surprise reward is unlocked.",
+            "growthSummary": "Growth is saved locally and is not affected by resetting the temporary statistics below.",
+            "collectionRewards": "Rewards are local and non-tradable. Custom imported models always remain available.",
+            "dropHistory": "Only the latest reward drops are shown here.",
+            "resetStats": "Resets the temporary input counters only. Lifetime growth, unlocked rewards, and collection are kept.",
+            "resetGrowth": "This permanently erases lifetime growth, unlocked rewards, guarantee progress, and reward history. This cannot be undone."
+          },
+          "buttons": {
+            "resetGrowth": "Reset Growth & Collection",
+            "confirmResetGrowth": "Reset Permanently"
+          },
+          "status": {
+            "owned": "Owned",
+            "locked": "Locked",
+            "milestoneAt": "At {count} lifetime interactions",
+            "interactionsRemaining": "{count} more effective interactions",
+            "readyNextInteraction": "Ready on the next effective interaction",
+            "allMilestonesClaimed": "All fixed milestones collected",
+            "randomCheckIn": "In {count} effective interactions",
+            "pityProgress": "{current} / {target} checks",
+            "pityGuaranteed": "The next eligible check is guaranteed",
+            "allRewardsOwned": "All collectible rewards are already owned",
+            "noRewards": "No collectible rewards yet",
+            "noDropHistory": "No rewards have dropped yet"
+          },
+          "sources": {
+            "milestone": "Milestone",
+            "drop": "Surprise",
+            "random": "Surprise",
+            "pity": "Guarantee"
+          },
+          "rarities": {
+            "common": "Common",
+            "uncommon": "Uncommon",
+            "rare": "Rare",
+            "epic": "Epic",
+            "legendary": "Legendary"
+          }
         }
       },
       "general": {
@@ -116,14 +180,17 @@
           "deleteModel": "Delete Model",
           "favorite": "Add to Favorites",
           "unfavorite": "Remove from Favorites",
-          "randomFavorite": "Random Favorite"
+          "randomFavorite": "Random Favorite",
+          "locked": "Locked"
         },
         "hints": {
           "deleteSuccess": "Deleted Successfully",
           "deleteModel": "Are you sure you want to delete this model?",
           "importSuccess": "Imported Successfully",
           "clickOrDragToImport": "Click or drag here to import",
-          "noFavorites": "Add models to favorites to switch between them at random."
+          "noFavorites": "Add models to favorites to switch between them at random.",
+          "unlockByInteraction": "Unlocks at {count} lifetime effective interactions.",
+          "lockedModel": "Keep interacting with the pet to unlock this reward model."
         },
         "tooltips": {
           "createModel": "Create Model",
@@ -178,6 +245,26 @@
           "feedbackIssues": "Feedback Issues",
           "viewLog": "View Logs"
         }
+      }
+    }
+  },
+  "progression": {
+    "rewards": {
+      "blueWhite": {
+        "title": "Blue & White Cat · Static Interaction",
+        "description": "A lightweight static pet style unlocked through lifetime interaction."
+      },
+      "standard": {
+        "title": "BongoCat · Standard Mode",
+        "description": "The classic keyboard-and-mouse Live2D interaction mode."
+      },
+      "keyboard": {
+        "title": "BongoCat · Keyboard Mode",
+        "description": "A Live2D setup focused on keyboard input feedback."
+      },
+      "gamepad": {
+        "title": "BongoCat · Gamepad Mode",
+        "description": "A Live2D setup made for controller input feedback."
       }
     }
   },

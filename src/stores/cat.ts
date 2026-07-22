@@ -28,6 +28,11 @@ export interface CatStore {
     idleAfter: number
     idleFPS: number
   }
+  feedback: {
+    hudEnabled: boolean
+    dialogueEnabled: boolean
+    rewardNotifications: boolean
+  }
   stats: {
     inputCount: number
     interactionCount: number
@@ -93,6 +98,12 @@ export const useCatStore = defineStore('cat', () => {
     idleEnabled: true,
     idleAfter: 60,
     idleFPS: 15,
+  })
+
+  const feedback = reactive<CatStore['feedback']>({
+    hudEnabled: true,
+    dialogueEnabled: true,
+    rewardNotifications: true,
   })
 
   const stats = reactive<CatStore['stats']>({
@@ -161,6 +172,7 @@ export const useCatStore = defineStore('cat', () => {
     model,
     window,
     performance,
+    feedback,
     stats,
     temporaryPassThrough,
     markActivity,

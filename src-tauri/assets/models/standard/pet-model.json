@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "presetKey": "standard",
   "displayName": "BongoCat · 标准模式",
   "renderer": "live2d",
@@ -8,5 +8,15 @@
   "cover": "resources/cover.png",
   "interactionBounds": { "x": 0.12, "y": 0.02, "width": 0.74, "height": 0.76 },
   "bubbleBounds": { "x": 0.02, "y": 0.02, "width": 0.36, "height": 0.20 },
+  "hudBounds": { "x": 0.62, "y": 0.03, "width": 0.32, "height": 0.12 },
+  "rewardId": "model-bongocat-standard",
+  "rarity": "common",
+  "interactions": {
+    "tap": [
+      { "motionGroup": "CAT_motion", "motionIndex": 0, "expressionIndex": 0, "fallback": "jump", "weight": 4 },
+      { "motionGroup": "CAT_motion", "motionIndex": 1, "expressionIndex": 1, "fallback": "squash", "weight": 3 },
+      { "expressionIndex": 2, "fallback": "shake", "weight": 2 }
+    ]
+  },
   "order": 20
 }

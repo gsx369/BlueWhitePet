@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "presetKey": "blue-white",
   "displayName": "蓝白猫 · 静态互动",
   "renderer": "image",
@@ -7,6 +7,16 @@
   "cover": "resources/cover.png",
   "interactionBounds": { "x": 0.21, "y": 0.33, "width": 0.62, "height": 0.58 },
   "bubbleBounds": { "x": 0.04, "y": 0.02, "width": 0.92, "height": 0.18 },
+  "hudBounds": { "x": 0.28, "y": 0.21, "width": 0.44, "height": 0.10 },
+  "rewardId": "model-blue-white-static",
+  "rarity": "uncommon",
+  "interactions": {
+    "tap": [
+      { "fallback": "jump", "weight": 4 },
+      { "fallback": "squash", "weight": 3 },
+      { "fallback": "shake", "weight": 2 }
+    ]
+  },
   "order": 10,
   "image": {
     "src": "/characters/blue-white-cat.png",

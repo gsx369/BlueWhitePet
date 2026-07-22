@@ -7,6 +7,13 @@
         "copySuccess": "桌宠图片已复制到剪贴板。",
         "saveSuccess": "桌宠图片已保存到 {path}。",
         "imageUnavailable": "桌宠图片尚未准备好。"
+      },
+      "growth": {
+        "newReward": "解锁新奖励：{reward}",
+        "milestone": "有效互动达到 {count} 次里程碑！",
+        "interactionUnit": "{count} 次互动",
+        "lifetimeTotal": "终身 {count} 次",
+        "combo": "连续 {count} 次"
       }
     },
     "preference": {
@@ -66,6 +73,63 @@
           "center": "居中",
           "nextMonitor": "下一台显示器",
           "resetStats": "重置统计"
+        },
+        "growth": {
+          "labels": {
+            "interactionFeedback": "互动反馈",
+            "interactionHUD": "互动计数提示",
+            "dialogueBubbles": "互动对话气泡",
+            "rewardNotifications": "奖励通知",
+            "growthAndCollection": "成长与收藏",
+            "lifetimeInteractions": "终身有效互动",
+            "nextMilestone": "下一个固定里程碑",
+            "nextRandomCheck": "下次惊喜判定",
+            "pityStatus": "惊喜保底",
+            "collectionRewards": "奖励收藏",
+            "dropHistory": "最近掉落",
+            "collected": "已收藏"
+          },
+          "hints": {
+            "interactionHUD": "有效互动后，在桌宠旁短暂显示 +1、连击与总次数。",
+            "dialogueBubbles": "与桌宠互动时显示简短的对话气泡。",
+            "rewardNotifications": "解锁固定里程碑或惊喜奖励时显示通知。",
+            "growthSummary": "成长数据保存在本地，不会受到下方普通统计重置的影响。",
+            "collectionRewards": "奖励仅保存在本地且不可交易；自行导入的模型始终可以直接使用。",
+            "dropHistory": "这里仅展示最近获得的奖励。",
+            "resetStats": "仅重置临时输入计数；终身成长、已解锁奖励与收藏都会保留。",
+            "resetGrowth": "将永久清除终身成长、已解锁奖励、保底进度与掉落历史，且无法撤销。"
+          },
+          "buttons": {
+            "resetGrowth": "重置成长与收藏",
+            "confirmResetGrowth": "确认永久重置"
+          },
+          "status": {
+            "owned": "已拥有",
+            "locked": "未解锁",
+            "milestoneAt": "终身互动达到 {count} 次",
+            "interactionsRemaining": "还需 {count} 次有效互动",
+            "readyNextInteraction": "下次有效互动即可判定",
+            "allMilestonesClaimed": "已收集全部固定里程碑",
+            "randomCheckIn": "再互动 {count} 次后判定",
+            "pityProgress": "{current} / {target} 次判定",
+            "pityGuaranteed": "下一次符合条件的判定必定获得奖励",
+            "allRewardsOwned": "已拥有全部可收藏奖励",
+            "noRewards": "暂无可收藏奖励",
+            "noDropHistory": "还没有获得过奖励"
+          },
+          "sources": {
+            "milestone": "里程碑",
+            "drop": "随机惊喜",
+            "random": "随机惊喜",
+            "pity": "保底"
+          },
+          "rarities": {
+            "common": "普通",
+            "uncommon": "优秀",
+            "rare": "稀有",
+            "epic": "史诗",
+            "legendary": "传说"
+          }
         }
       },
       "general": {
@@ -116,14 +180,17 @@
           "deleteModel": "删除模型",
           "favorite": "加入收藏",
           "unfavorite": "取消收藏",
-          "randomFavorite": "随机收藏模型"
+          "randomFavorite": "随机收藏模型",
+          "locked": "未解锁"
         },
         "hints": {
           "deleteSuccess": "删除成功",
           "deleteModel": "你确定要删除此模型吗？",
           "importSuccess": "导入成功",
           "clickOrDragToImport": "点击或拖动至此区域导入",
-          "noFavorites": "收藏模型后，就可以在它们之间随机切换。"
+          "noFavorites": "收藏模型后，就可以在它们之间随机切换。",
+          "unlockByInteraction": "终身有效互动达到 {count} 次后解锁。",
+          "lockedModel": "继续与桌宠互动，即可解锁这个奖励模型。"
         },
         "tooltips": {
           "createModel": "制作模型",
@@ -178,6 +245,26 @@
           "feedbackIssues": "反馈问题",
           "viewLog": "查看日志"
         }
+      }
+    }
+  },
+  "progression": {
+    "rewards": {
+      "blueWhite": {
+        "title": "蓝白猫 · 静态互动",
+        "description": "通过终身互动解锁的轻巧静态桌宠形象。"
+      },
+      "standard": {
+        "title": "BongoCat · 标准模式",
+        "description": "经典的键盘与鼠标 Live2D 互动模式。"
+      },
+      "keyboard": {
+        "title": "BongoCat · 键盘模式",
+        "description": "专注于键盘输入反馈的 Live2D 模式。"
+      },
+      "gamepad": {
+        "title": "BongoCat · 手柄模式",
+        "description": "为手柄输入反馈设计的 Live2D 模式。"
       }
     }
   },
