@@ -9,12 +9,23 @@ interface PngSize {
   width: number
 }
 
+interface ModelCapabilities {
+  expressionCount: number
+  motionCounts: Map<string, number>
+}
+
 const modelsRoot = resolve('src-tauri/assets/models')
 const errors: string[] = []
 const presetKeys = new Map<string, string>()
+const rewardIds = new Map<string, string>()
 const defaultModels: string[] = []
 const pngSizes = new Map<string, PngSize>()
 const textureSizes = new Map<string, Map<string, PngSize & { file: string }>>()
+const modelRarities = new Set(['common', 'uncommon', 'rare', 'epic', 'legendary'])
+const interactionFallbacks = new Set(['jump', 'squash', 'shake'])
+const rewardIdPattern = /^[a-z0-9][a-z0-9-]*$/
+const MAX_TAP_INTERACTIONS = 32
+const MAX_INTERACTION_WEIGHT = 1000
 
 function report(message: string) {
   errors.push(message)
@@ -109,7 +120,7 @@ function validateOptionalReference(
   resolveRelativeFile(model3Directory, references[key], `${label}.${key}`)
 }
 
-function validateModel3(file: string, presetKey: string, modelLabel: string) {
+function validateModel3(file: string, presetKey: string, modelLabel: string): ModelCapabilities | undefined {
   const value = readJson(file, `${modelLabel}.entry`)
 
   if (!isRecord(value) || !isRecord(value.FileReferences)) {
@@ -119,6 +130,10 @@ function validateModel3(file: string, presetKey: string, modelLabel: string) {
 
   const references = value.FileReferences
   const model3Directory = dirname(file)
+  const capabilities: ModelCapabilities = {
+    expressionCount: 0,
+    motionCounts: new Map(),
+  }
 
   resolveRelativeFile(model3Directory, references.Moc, `${modelLabel}.FileReferences.Moc`)
 
@@ -161,6 +176,8 @@ function validateModel3(file: string, presetKey: string, modelLabel: string) {
     if (!Array.isArray(references.Expressions)) {
       report(`${modelLabel}.FileReferences.Expressions: 必须是数组`)
     } else {
+      capabilities.expressionCount = references.Expressions.length
+
       references.Expressions.forEach((expression, index) => {
         const expressionLabel = `${modelLabel}.FileReferences.Expressions[${index}].File`
 
@@ -184,6 +201,8 @@ function validateModel3(file: string, presetKey: string, modelLabel: string) {
           continue
         }
 
+        capabilities.motionCounts.set(group, motions.length)
+
         motions.forEach((motion, index) => {
           const motionLabel = `${modelLabel}.FileReferences.Motions.${group}[${index}]`
 
@@ -201,6 +220,106 @@ function validateModel3(file: string, presetKey: string, modelLabel: string) {
       }
     }
   }
+
+  return capabilities
+}
+
+function validateInteractions(
+  value: unknown,
+  renderer: unknown,
+  capabilities: ModelCapabilities | undefined,
+  modelLabel: string,
+) {
+  if (value === undefined) return
+  if (!isRecord(value)) {
+    report(`${modelLabel}.interactions: 必须是对象`)
+    return
+  }
+
+  const { tap } = value
+
+  if (tap === undefined) return
+  if (!Array.isArray(tap) || tap.length === 0 || tap.length > MAX_TAP_INTERACTIONS) {
+    report(`${modelLabel}.interactions.tap: 必须包含 1～${MAX_TAP_INTERACTIONS} 个动作`)
+    return
+  }
+
+  tap.forEach((action, index) => {
+    const actionLabel = `${modelLabel}.interactions.tap[${index}]`
+
+    if (!isRecord(action)) {
+      report(`${actionLabel}: 必须是对象`)
+      return
+    }
+
+    const { expressionIndex, fallback, motionGroup, motionIndex, weight } = action
+    const hasMotionGroup = motionGroup !== undefined
+    const hasMotionIndex = motionIndex !== undefined
+
+    if (hasMotionGroup !== hasMotionIndex) {
+      report(`${actionLabel}: motionGroup 与 motionIndex 必须同时提供`)
+    }
+
+    if (hasMotionGroup && (typeof motionGroup !== 'string' || motionGroup.trim().length === 0)) {
+      report(`${actionLabel}.motionGroup: 必须是非空字符串`)
+    }
+
+    if (hasMotionIndex && (typeof motionIndex !== 'number' || !Number.isInteger(motionIndex) || motionIndex < 0)) {
+      report(`${actionLabel}.motionIndex: 必须是大于等于 0 的整数`)
+    }
+
+    if (
+      expressionIndex !== undefined
+      && (typeof expressionIndex !== 'number' || !Number.isInteger(expressionIndex) || expressionIndex < 0)
+    ) {
+      report(`${actionLabel}.expressionIndex: 必须是大于等于 0 的整数`)
+    }
+
+    if (typeof fallback !== 'string' || !interactionFallbacks.has(fallback)) {
+      report(`${actionLabel}.fallback: 必须是 jump、squash 或 shake`)
+    }
+
+    if (
+      typeof weight !== 'number'
+      || !Number.isFinite(weight)
+      || weight <= 0
+      || weight > MAX_INTERACTION_WEIGHT
+    ) {
+      report(`${actionLabel}.weight: 必须位于 (0, ${MAX_INTERACTION_WEIGHT}]`)
+    }
+
+    const referencesLive2d = hasMotionGroup || hasMotionIndex || expressionIndex !== undefined
+
+    if (renderer !== 'live2d' && referencesLive2d) {
+      report(`${actionLabel}: 图片模型不能引用 Live2D 动作或表情`)
+      return
+    }
+
+    if (
+      capabilities
+      && typeof motionGroup === 'string'
+      && typeof motionIndex === 'number'
+      && Number.isInteger(motionIndex)
+      && motionIndex >= 0
+    ) {
+      const motionCount = capabilities.motionCounts.get(motionGroup)
+
+      if (motionCount === undefined) {
+        report(`${actionLabel}.motionGroup: .model3.json 中不存在 ${motionGroup}`)
+      } else if (motionIndex >= motionCount) {
+        report(`${actionLabel}.motionIndex: ${motionGroup}[${motionIndex}] 超出范围`)
+      }
+    }
+
+    if (
+      capabilities
+      && typeof expressionIndex === 'number'
+      && Number.isInteger(expressionIndex)
+      && expressionIndex >= capabilities.expressionCount
+    ) {
+      report(`${actionLabel}.expressionIndex: ${expressionIndex} 超出范围`)
+    }
+  })
 }
 
 function validateManifest(modelDirectory: string, folderName: string) {
@@ -219,7 +338,15 @@ function validateManifest(modelDirectory: string, folderName: string) {
     return
   }
 
-  if (manifest.schemaVersion !== 1) report(`${modelLabel}.schemaVersion: 目前只支持 1`)
+  if (manifest.schemaVersion !== 1 && manifest.schemaVersion !== 2) {
+    report(`${modelLabel}.schemaVersion: 目前只支持 1 或 2`)
+  }
+
+  const v2Fields = ['rewardId', 'rarity', 'interactions', 'hudBounds'] as const
+
+  if (manifest.schemaVersion === 1 && v2Fields.some(field => manifest[field] !== undefined)) {
+    report(`${modelLabel}.schemaVersion: 使用 v2 字段时必须设为 2`)
+  }
 
   const presetKey = manifest.presetKey
 
@@ -254,7 +381,30 @@ function validateManifest(modelDirectory: string, folderName: string) {
     defaultModels.push(folderName)
   }
 
-  for (const key of ['interactionBounds', 'bubbleBounds']) {
+  const { rarity, rewardId } = manifest
+
+  if (rewardId !== undefined && (typeof rewardId !== 'string' || !rewardIdPattern.test(rewardId))) {
+    report(`${modelLabel}.rewardId: 必须是小写字母、数字和连字符组成的非空标识`)
+  } else if (typeof rewardId === 'string') {
+    const duplicate = rewardIds.get(rewardId)
+
+    if (duplicate) report(`${modelLabel}.rewardId: 与 ${duplicate} 重复（${rewardId}）`)
+    else rewardIds.set(rewardId, folderName)
+  }
+
+  if (rarity !== undefined && (typeof rarity !== 'string' || !modelRarities.has(rarity))) {
+    report(`${modelLabel}.rarity: 必须是 common、uncommon、rare、epic 或 legendary`)
+  }
+
+  if ((rewardId === undefined) !== (rarity === undefined)) {
+    report(`${modelLabel}: rewardId 与 rarity 必须同时提供`)
+  }
+
+  if (manifest.default === true && rewardId !== undefined) {
+    report(`${modelLabel}: 默认模型必须保持免费，不能设置 rewardId`)
+  }
+
+  for (const key of ['interactionBounds', 'bubbleBounds', 'hudBounds']) {
     const bounds = manifest[key]
 
     if (bounds !== undefined) {
@@ -283,6 +433,8 @@ function validateManifest(modelDirectory: string, folderName: string) {
 
   resolveRelativeFile(modelDirectory, manifest.cover, `${modelLabel}.cover`)
 
+  let capabilities: ModelCapabilities | undefined
+
   if (renderer === 'live2d') {
     const entry = resolveRelativeFile(modelDirectory, manifest.entry, `${modelLabel}.entry`)
 
@@ -290,10 +442,12 @@ function validateManifest(modelDirectory: string, folderName: string) {
       if (!entry.toLowerCase().endsWith('.model3.json')) {
         report(`${modelLabel}.entry: 必须指向 .model3.json`)
       } else if (typeof presetKey === 'string') {
-        validateModel3(entry, presetKey, modelLabel)
+        capabilities = validateModel3(entry, presetKey, modelLabel)
       }
     }
   }
+
+  validateInteractions(manifest.interactions, renderer, capabilities, modelLabel)
 
   if (renderer === 'image') {
     if (!isRecord(manifest.image)) {

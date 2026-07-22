@@ -20,11 +20,13 @@ import { useAppStore } from './stores/app'
 import { useCatStore } from './stores/cat'
 import { useGeneralStore } from './stores/general'
 import { useModelStore } from './stores/model'
+import { useProgressionStore } from './stores/progression'
 import { useShortcutStore } from './stores/shortcut.ts'
 
 const appStore = useAppStore()
 const modelStore = useModelStore()
 const catStore = useCatStore()
+const progressionStore = useProgressionStore()
 const generalStore = useGeneralStore()
 const shortcutStore = useShortcutStore()
 const appWindow = getCurrentWebviewWindow()
@@ -38,12 +40,48 @@ onMounted(async () => {
   await modelStore.$tauri.start()
   await modelStore.init()
   await catStore.$tauri.start()
+  const hadSavedCatProfile = catStore.migrated
+    || catStore.stats.inputCount > 0
+    || catStore.stats.interactionCount > 0
+
+  await progressionStore.$tauri.start()
+  progressionStore.initialize({
+    // Cat migration is the stable pre-progression profile sentinel. The model
+    // library is synchronized by both windows during first launch, so using it
+    // here could make a fresh profile look like an upgraded installation.
+    legacyProfile: hadSavedCatProfile,
+  })
   catStore.init()
   await generalStore.$tauri.start()
   await generalStore.init()
   await shortcutStore.$tauri.start()
   await restoreState()
 })
+
+watch([
+  () => progressionStore.initialized,
+  () => progressionStore.inventory,
+  () => modelStore.currentModel?.id,
+  () => modelStore.models.length,
+], () => {
+  const currentModel = modelStore.currentModel
+
+  if (
+    !progressionStore.initialized
+    || !currentModel?.rewardId
+    || progressionStore.isOwned(currentModel.rewardId)
+  ) {
+    return
+  }
+
+  const fallback = modelStore.models.find(model => model.default && !model.rewardId)
+    ?? modelStore.models.find(model => !model.rewardId)
+
+  if (!fallback || fallback.id === currentModel.id) return
+
+  modelStore.modelReady = false
+  modelStore.currentModel = fallback
+}, { deep: true })
 
 watch(() => generalStore.appearance.language, (value) => {
   locale.value = value ?? LANGUAGE.EN_US

@@ -7,6 +7,13 @@
         "copySuccess": "Imagem do mascote copiada para a área de transferência.",
         "saveSuccess": "Imagem do mascote salva em {path}.",
         "imageUnavailable": "A imagem do mascote ainda não está pronta."
+      },
+      "growth": {
+        "newReward": "Nova recompensa desbloqueada: {reward}",
+        "milestone": "Marco de {count} interações efetivas alcançado!",
+        "interactionUnit": "{count} interações",
+        "lifetimeTotal": "Total de {count}",
+        "combo": "Combo de {count}"
       }
     },
     "preference": {
@@ -66,6 +73,63 @@
           "center": "Centro",
           "nextMonitor": "Próximo Monitor",
           "resetStats": "Redefinir Estatísticas"
+        },
+        "growth": {
+          "labels": {
+            "interactionFeedback": "Retorno de Interação",
+            "interactionHUD": "Contador de Interações na Tela",
+            "dialogueBubbles": "Balões de Diálogo",
+            "rewardNotifications": "Notificações de Recompensa",
+            "growthAndCollection": "Progresso e Coleção",
+            "lifetimeInteractions": "Interações Efetivas Totais",
+            "nextMilestone": "Próximo Marco",
+            "nextRandomCheck": "Próxima Verificação de Surpresa",
+            "pityStatus": "Garantia de Surpresa",
+            "collectionRewards": "Coleção de Recompensas",
+            "dropHistory": "Recompensas Recentes",
+            "collected": "Colecionadas"
+          },
+          "hints": {
+            "interactionHUD": "Mostra brevemente +1, o combo e o total ao lado do mascote após uma interação efetiva.",
+            "dialogueBubbles": "Mostra balões com falas curtas durante as interações com o mascote.",
+            "rewardNotifications": "Mostra um aviso ao desbloquear um marco ou uma recompensa surpresa.",
+            "growthSummary": "O progresso é salvo localmente e não é afetado ao redefinir as estatísticas temporárias abaixo.",
+            "collectionRewards": "As recompensas são locais e não podem ser trocadas. Modelos personalizados importados permanecem sempre disponíveis.",
+            "dropHistory": "Somente as recompensas obtidas mais recentemente aparecem aqui.",
+            "resetStats": "Redefine apenas os contadores temporários. O progresso total, as recompensas e a coleção são mantidos.",
+            "resetGrowth": "Isso apaga permanentemente o progresso total, as recompensas desbloqueadas, a garantia e o histórico. Não é possível desfazer."
+          },
+          "buttons": {
+            "resetGrowth": "Redefinir Progresso e Coleção",
+            "confirmResetGrowth": "Redefinir Permanentemente"
+          },
+          "status": {
+            "owned": "Obtida",
+            "locked": "Bloqueada",
+            "milestoneAt": "Ao atingir {count} interações totais",
+            "interactionsRemaining": "Mais {count} interações efetivas",
+            "readyNextInteraction": "Pronta na próxima interação efetiva",
+            "allMilestonesClaimed": "Todos os marcos fixos foram coletados",
+            "randomCheckIn": "Em {count} interações efetivas",
+            "pityProgress": "{current} / {target} verificações",
+            "pityGuaranteed": "A próxima verificação elegível é garantida",
+            "allRewardsOwned": "Todas as recompensas colecionáveis já foram obtidas",
+            "noRewards": "Ainda não há recompensas colecionáveis",
+            "noDropHistory": "Nenhuma recompensa foi obtida ainda"
+          },
+          "sources": {
+            "milestone": "Marco",
+            "drop": "Surpresa",
+            "random": "Surpresa",
+            "pity": "Garantia"
+          },
+          "rarities": {
+            "common": "Comum",
+            "uncommon": "Incomum",
+            "rare": "Rara",
+            "epic": "Épica",
+            "legendary": "Lendária"
+          }
         }
       },
       "general": {
@@ -116,14 +180,17 @@
           "deleteModel": "Excluir modelo",
           "favorite": "Adicionar aos Favoritos",
           "unfavorite": "Remover dos Favoritos",
-          "randomFavorite": "Favorito Aleatório"
+          "randomFavorite": "Favorito Aleatório",
+          "locked": "Bloqueado"
         },
         "hints": {
           "deleteSuccess": "Excluído com sucesso",
           "deleteModel": "Tem certeza de que deseja excluir este modelo?",
           "importSuccess": "Importação bem-sucedida",
           "clickOrDragToImport": "Clique ou arraste para importar",
-          "noFavorites": "Adicione modelos aos favoritos para alternar entre eles aleatoriamente."
+          "noFavorites": "Adicione modelos aos favoritos para alternar entre eles aleatoriamente.",
+          "unlockByInteraction": "Desbloqueia com {count} interações efetivas totais.",
+          "lockedModel": "Continue interagindo com o mascote para desbloquear este modelo de recompensa."
         },
         "tooltips": {
           "createModel": "Criar modelo",
@@ -178,6 +245,26 @@
           "feedbackIssues": "Reportar Problema",
           "viewLog": "Ver Logs"
         }
+      }
+    }
+  },
+  "progression": {
+    "rewards": {
+      "blueWhite": {
+        "title": "Gato Azul e Branco · Interação Estática",
+        "description": "Um visual estático e leve desbloqueado por interações totais."
+      },
+      "standard": {
+        "title": "BongoCat · Modo Padrão",
+        "description": "O modo Live2D clássico para interações com teclado e mouse."
+      },
+      "keyboard": {
+        "title": "BongoCat · Modo Teclado",
+        "description": "Um modo Live2D focado no retorno das entradas do teclado."
+      },
+      "gamepad": {
+        "title": "BongoCat · Modo Controle",
+        "description": "Um modo Live2D criado para o retorno das entradas do controle."
       }
     }
   },

@@ -13,6 +13,8 @@ import { join } from '@/utils/path'
 export type ModelMode = 'standard' | 'keyboard' | 'gamepad'
 export type ModelRenderer = 'live2d' | 'image'
 export type ModelPresetKey = string
+export type ModelRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+export type ModelInteractionFallback = 'jump' | 'squash' | 'shake'
 
 export interface ImageModel {
   src: string
@@ -27,6 +29,18 @@ export interface ModelBounds {
   height: number
 }
 
+export interface ModelTapInteraction {
+  motionGroup?: string
+  motionIndex?: number
+  expressionIndex?: number
+  fallback: ModelInteractionFallback
+  weight: number
+}
+
+export interface ModelInteractions {
+  tap?: ModelTapInteraction[]
+}
+
 interface ManifestImageModel {
   file?: string
   src?: string
@@ -35,7 +49,7 @@ interface ManifestImageModel {
 }
 
 interface ModelManifest {
-  schemaVersion: 1
+  schemaVersion: 1 | 2
   presetKey: string
   displayName: string
   renderer: ModelRenderer
@@ -47,6 +61,10 @@ interface ModelManifest {
   image?: ManifestImageModel
   interactionBounds?: ModelBounds
   bubbleBounds?: ModelBounds
+  hudBounds?: ModelBounds
+  rewardId?: string
+  rarity?: ModelRarity
+  interactions?: ModelInteractions
 }
 
 export interface Model {
@@ -64,11 +82,20 @@ export interface Model {
   image?: ImageModel
   interactionBounds?: ModelBounds
   bubbleBounds?: ModelBounds
+  hudBounds?: ModelBounds
+  rewardId?: string
+  rarity?: ModelRarity
+  interactions?: ModelInteractions
 }
 
 const modelModes = new Set<ModelMode>(['standard', 'keyboard', 'gamepad'])
 const modelRenderers = new Set<ModelRenderer>(['live2d', 'image'])
+const modelRarities = new Set<ModelRarity>(['common', 'uncommon', 'rare', 'epic', 'legendary'])
+const interactionFallbacks = new Set<ModelInteractionFallback>(['jump', 'squash', 'shake'])
 const presetKeyPattern = /^[a-z0-9][a-z0-9-]*$/
+const rewardIdPattern = /^[a-z0-9][a-z0-9-]*$/
+const MAX_TAP_INTERACTIONS = 32
+const MAX_INTERACTION_WEIGHT = 1000
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -103,6 +130,11 @@ function resolveModelReferencePath(root: string, entry: string, reference: strin
   return join(root, ...segments)
 }
 
+interface ModelCapabilities {
+  expressionCount: number
+  motionCounts: Map<string, number>
+}
+
 function collectModelReferences(value: unknown) {
   if (!isRecord(value) || !isRecord(value.FileReferences)) {
     throw new Error('Invalid Live2D model entry')
@@ -110,6 +142,10 @@ function collectModelReferences(value: unknown) {
 
   const references = value.FileReferences
   const files: string[] = []
+  const capabilities: ModelCapabilities = {
+    expressionCount: 0,
+    motionCounts: new Map(),
+  }
   const addFile = (file: unknown, label: string) => {
     if (typeof file !== 'string' || !file) throw new Error(`Invalid Live2D reference: ${label}`)
 
@@ -131,6 +167,8 @@ function collectModelReferences(value: unknown) {
   if (references.Expressions !== undefined) {
     if (!Array.isArray(references.Expressions)) throw new Error('Invalid Live2D expressions')
 
+    capabilities.expressionCount = references.Expressions.length
+
     references.Expressions.forEach((expression, index) => {
       if (!isRecord(expression)) throw new Error(`Invalid Live2D expression: ${index}`)
 
@@ -144,6 +182,8 @@ function collectModelReferences(value: unknown) {
     for (const [group, motions] of Object.entries(references.Motions)) {
       if (!Array.isArray(motions)) throw new Error(`Invalid Live2D motion group: ${group}`)
 
+      capabilities.motionCounts.set(group, motions.length)
+
       motions.forEach((motion, index) => {
         if (!isRecord(motion)) throw new Error(`Invalid Live2D motion: ${group}[${index}]`)
 
@@ -153,7 +193,105 @@ function collectModelReferences(value: unknown) {
     }
   }
 
-  return files
+  return { capabilities, files }
+}
+
+function parseModelInteractions(value: unknown): ModelInteractions | undefined {
+  if (value === undefined) return
+  if (!isRecord(value)) throw new Error('Invalid model interactions')
+
+  const { tap } = value
+
+  if (tap === undefined) return {}
+  if (!Array.isArray(tap) || tap.length === 0 || tap.length > MAX_TAP_INTERACTIONS) {
+    throw new Error(`Model tap interactions must contain 1-${MAX_TAP_INTERACTIONS} actions`)
+  }
+
+  const parsedTap = tap.map((action, index): ModelTapInteraction => {
+    if (!isRecord(action)) throw new Error(`Invalid model tap interaction: ${index}`)
+
+    const { motionGroup, motionIndex, expressionIndex, fallback, weight } = action
+    const hasMotionGroup = motionGroup !== undefined
+    const hasMotionIndex = motionIndex !== undefined
+
+    if (hasMotionGroup !== hasMotionIndex) {
+      throw new Error(`Model tap interaction motion must include a group and index: ${index}`)
+    }
+
+    if (hasMotionGroup && (typeof motionGroup !== 'string' || !motionGroup.trim())) {
+      throw new Error(`Invalid model tap motion group: ${index}`)
+    }
+
+    if (hasMotionIndex && (typeof motionIndex !== 'number' || !Number.isInteger(motionIndex) || motionIndex < 0)) {
+      throw new Error(`Invalid model tap motion index: ${index}`)
+    }
+
+    if (
+      expressionIndex !== undefined
+      && (typeof expressionIndex !== 'number' || !Number.isInteger(expressionIndex) || expressionIndex < 0)
+    ) {
+      throw new Error(`Invalid model tap expression index: ${index}`)
+    }
+
+    if (typeof fallback !== 'string' || !interactionFallbacks.has(fallback as ModelInteractionFallback)) {
+      throw new Error(`Invalid model tap fallback: ${index}`)
+    }
+
+    if (
+      typeof weight !== 'number'
+      || !Number.isFinite(weight)
+      || weight <= 0
+      || weight > MAX_INTERACTION_WEIGHT
+    ) {
+      throw new Error(`Model tap weight must be within (0, ${MAX_INTERACTION_WEIGHT}]: ${index}`)
+    }
+
+    return {
+      motionGroup: hasMotionGroup ? (motionGroup as string).trim() : undefined,
+      motionIndex: hasMotionIndex ? motionIndex as number : undefined,
+      expressionIndex: expressionIndex as number | undefined,
+      fallback: fallback as ModelInteractionFallback,
+      weight,
+    }
+  })
+
+  return { tap: parsedTap }
+}
+
+function validateModelInteractions(
+  interactions: ModelInteractions | undefined,
+  renderer: ModelRenderer,
+  capabilities?: ModelCapabilities,
+) {
+  for (const [index, action] of (interactions?.tap ?? []).entries()) {
+    if (renderer !== 'live2d' && (
+      action.motionGroup !== undefined
+      || action.motionIndex !== undefined
+      || action.expressionIndex !== undefined
+    )) {
+      throw new Error(`Image model tap interaction cannot reference Live2D behavior: ${index}`)
+    }
+
+    if (action.motionGroup !== undefined && action.motionIndex !== undefined && capabilities) {
+      const motionCount = capabilities.motionCounts.get(action.motionGroup)
+
+      if (motionCount === undefined) {
+        throw new Error(`Unknown model tap motion group: ${action.motionGroup}`)
+      }
+
+      if (action.motionIndex >= motionCount) {
+        throw new Error(`Model tap motion index is out of range: ${action.motionGroup}[${action.motionIndex}]`)
+      }
+    }
+
+    if (
+      action.expressionIndex !== undefined
+      && capabilities
+      && action.expressionIndex >= capabilities.expressionCount
+    ) {
+      throw new Error(`Model tap expression index is out of range: ${action.expressionIndex}`)
+    }
+  }
 }
 
 function parseModelBounds(value: unknown, label: string): ModelBounds | undefined {
@@ -182,11 +320,12 @@ function parseModelBounds(value: unknown, label: string): ModelBounds | undefine
 }
 
 function parseManifest(value: unknown): ModelManifest {
-  if (!isRecord(value) || value.schemaVersion !== 1) {
+  if (!isRecord(value) || (value.schemaVersion !== 1 && value.schemaVersion !== 2)) {
     throw new Error('Unsupported model manifest')
   }
 
   const {
+    schemaVersion,
     presetKey,
     displayName,
     renderer,
@@ -198,6 +337,10 @@ function parseManifest(value: unknown): ModelManifest {
     image,
     interactionBounds,
     bubbleBounds,
+    hudBounds,
+    rewardId,
+    rarity,
+    interactions,
   } = value
 
   if (typeof presetKey !== 'string' || !presetKeyPattern.test(presetKey)) {
@@ -226,6 +369,34 @@ function parseManifest(value: unknown): ModelManifest {
 
   if (typeof isDefault !== 'boolean') {
     throw new TypeError('Invalid model default flag')
+  }
+
+  let manifestRewardId: string | undefined
+  let manifestRarity: ModelRarity | undefined
+  let manifestInteractions: ModelInteractions | undefined
+  let manifestHudBounds: ModelBounds | undefined
+
+  if (schemaVersion === 2) {
+    if (rewardId !== undefined && (typeof rewardId !== 'string' || !rewardIdPattern.test(rewardId))) {
+      throw new Error('Invalid model reward ID')
+    }
+
+    if (rarity !== undefined && (typeof rarity !== 'string' || !modelRarities.has(rarity as ModelRarity))) {
+      throw new Error('Invalid model rarity')
+    }
+
+    if ((rewardId === undefined) !== (rarity === undefined)) {
+      throw new Error('Model reward ID and rarity must be provided together')
+    }
+
+    manifestRewardId = rewardId as string | undefined
+    manifestRarity = rarity as ModelRarity | undefined
+    manifestInteractions = parseModelInteractions(interactions)
+    manifestHudBounds = parseModelBounds(hudBounds, 'HUD')
+
+    if (isDefault && manifestRewardId) {
+      throw new Error('Default model must remain free')
+    }
   }
 
   if (entry !== undefined && (typeof entry !== 'string' || !isSafeRelativePath(entry))) {
@@ -267,7 +438,7 @@ function parseManifest(value: unknown): ModelManifest {
   }
 
   return {
-    schemaVersion: 1,
+    schemaVersion,
     presetKey,
     displayName: displayName.trim(),
     renderer: renderer as ModelRenderer,
@@ -279,6 +450,10 @@ function parseManifest(value: unknown): ModelManifest {
     image: manifestImage,
     interactionBounds: parseModelBounds(interactionBounds, 'interaction'),
     bubbleBounds: parseModelBounds(bubbleBounds, 'bubble'),
+    hudBounds: manifestHudBounds,
+    rewardId: manifestRewardId,
+    rarity: manifestRarity,
+    interactions: manifestInteractions,
   }
 }
 
@@ -299,7 +474,7 @@ async function readManifest(path: string) {
 
   if (manifest.renderer === 'live2d' && manifest.entry) {
     const modelJson = JSON.parse(await readTextFile(join(path, manifest.entry)))
-    const references = collectModelReferences(modelJson)
+    const { capabilities, files: references } = collectModelReferences(modelJson)
 
     for (const reference of references) {
       const referencePath = resolveModelReferencePath(path, manifest.entry, reference)
@@ -308,6 +483,10 @@ async function readManifest(path: string) {
         throw new Error(`Missing Live2D model asset: ${reference}`)
       }
     }
+
+    validateModelInteractions(manifest.interactions, manifest.renderer, capabilities)
+  } else {
+    validateModelInteractions(manifest.interactions, manifest.renderer)
   }
 
   return manifest
@@ -345,6 +524,7 @@ async function discoverPresetModels(modelsPath: string): Promise<Model[]> {
     .sort((a, b) => a.name.localeCompare(b.name))
   const models: Model[] = []
   const presetKeys = new Set<string>()
+  const rewardIds = new Set<string>()
 
   for (const entry of entries) {
     const path = join(modelsPath, entry.name)
@@ -358,7 +538,13 @@ async function discoverPresetModels(modelsPath: string): Promise<Model[]> {
           continue
         }
 
+        if (manifest.rewardId && rewardIds.has(manifest.rewardId)) {
+          void warn(`Duplicate built-in model rewardId ignored: ${manifest.rewardId}`)
+          continue
+        }
+
         presetKeys.add(manifest.presetKey)
+        if (manifest.rewardId) rewardIds.add(manifest.rewardId)
         models.push({
           id: `preset-${manifest.presetKey}`,
           path,
@@ -374,6 +560,10 @@ async function discoverPresetModels(modelsPath: string): Promise<Model[]> {
           image: resolveManifestImage(path, manifest.image),
           interactionBounds: manifest.interactionBounds,
           bubbleBounds: manifest.bubbleBounds,
+          hudBounds: manifest.hudBounds,
+          rewardId: manifest.rewardId,
+          rarity: manifest.rarity,
+          interactions: manifest.interactions,
         })
 
         continue
@@ -444,6 +634,10 @@ async function normalizeCustomModel(model: Model): Promise<Model> {
       image: undefined,
       interactionBounds: undefined,
       bubbleBounds: undefined,
+      hudBounds: undefined,
+      rewardId: undefined,
+      rarity: undefined,
+      interactions: undefined,
     }
   }
 
@@ -461,6 +655,10 @@ async function normalizeCustomModel(model: Model): Promise<Model> {
     image: resolveManifestImage(model.path, manifest.image),
     interactionBounds: manifest.interactionBounds,
     bubbleBounds: manifest.bubbleBounds,
+    hudBounds: manifest.hudBounds,
+    rewardId: undefined,
+    rarity: undefined,
+    interactions: manifest.interactions,
   }
 }
 

@@ -9,8 +9,10 @@ import { useI18n } from 'vue-i18n'
 
 import type { Model } from '@/stores/model'
 
+import { DEFAULT_MILESTONES } from '@/domain/progression'
 import { useCatStore } from '@/stores/cat'
 import { useModelStore } from '@/stores/model'
+import { useProgressionStore } from '@/stores/progression'
 import { join } from '@/utils/path'
 
 import BehaviorModal from './components/behavior-modal/index.vue'
@@ -19,6 +21,7 @@ import Upload from './components/upload/index.vue'
 
 const catStore = useCatStore()
 const modelStore = useModelStore()
+const progressionStore = useProgressionStore()
 const firstCardRef = useTemplateRef('firstCard')
 const { height } = useElementSize(firstCardRef)
 const { t } = useI18n()
@@ -36,11 +39,28 @@ const masonryItems = computed(() => {
 })
 
 function handleToggle(nextModel: Model) {
+  if (!isModelUnlocked(nextModel)) {
+    message.info(getUnlockHint(nextModel))
+    return
+  }
+
   if (modelStore.currentModel?.id === nextModel.id) return
 
   modelStore.modelReady = false
 
   modelStore.currentModel = nextModel
+}
+
+function isModelUnlocked(model: Model) {
+  return !model.rewardId || progressionStore.isOwned(model.rewardId)
+}
+
+function getUnlockHint(model: Model) {
+  const milestone = DEFAULT_MILESTONES.find(item => item.rewardId === model.rewardId)
+
+  return milestone
+    ? t('pages.preference.model.hints.unlockByInteraction', { count: milestone.target })
+    : t('pages.preference.model.hints.lockedModel')
 }
 
 function getDisplayName(model: Model) {
@@ -52,9 +72,34 @@ function getCoverPath(model: Model) {
 }
 
 function handleRandomFavorite() {
-  if (modelStore.selectRandomFavorite()) return
+  const favorites = modelStore.models.filter((model) => {
+    return modelStore.isFavorite(model.id) && isModelUnlocked(model)
+  })
+
+  if (favorites.length > 0) {
+    const candidates = favorites.length > 1
+      ? favorites.filter(model => model.id !== modelStore.currentModel?.id)
+      : favorites
+    const nextModel = candidates[Math.floor(Math.random() * candidates.length)]
+
+    if (nextModel && nextModel.id !== modelStore.currentModel?.id) {
+      modelStore.modelReady = false
+      modelStore.currentModel = nextModel
+    }
+
+    return
+  }
 
   message.info(t('pages.preference.model.hints.noFavorites'))
+}
+
+function handleToggleFavorite(model: Model) {
+  if (!isModelUnlocked(model)) {
+    message.info(getUnlockHint(model))
+    return
+  }
+
+  modelStore.toggleFavorite(model.id)
 }
 
 async function handleDelete(item: Model) {
@@ -98,6 +143,7 @@ async function handleDelete(item: Model) {
       <Card
         v-else
         :ref="index === 1 ? 'firstCard' : void 0"
+        :class="{ 'model-card--locked': !isModelUnlocked(data) }"
         :classes="{
           actions: `[&>li]:(flex justify-center) [&>li>span]:(inline-flex! justify-center text-4!)`,
         }"
@@ -106,10 +152,21 @@ async function handleDelete(item: Model) {
         @click="handleToggle(data)"
       >
         <template #cover>
-          <img
-            :alt="getDisplayName(data)"
-            :src="getCoverPath(data)"
-          >
+          <div class="model-cover">
+            <img
+              :alt="getDisplayName(data)"
+              :src="getCoverPath(data)"
+            >
+
+            <div
+              v-if="!isModelUnlocked(data)"
+              class="model-cover__lock"
+              :title="getUnlockHint(data)"
+            >
+              <i class="i-lucide:lock-keyhole" />
+              <span>{{ $t('pages.preference.model.labels.locked') }}</span>
+            </div>
+          </div>
         </template>
 
         <div
@@ -121,19 +178,30 @@ async function handleDelete(item: Model) {
 
         <template #actions>
           <i
-            class="i-lucide:circle-check"
-            :class="{ 'text-success': data.id === modelStore.currentModel?.id }"
+            :class="[
+              isModelUnlocked(data) ? 'i-lucide:circle-check' : 'i-lucide:lock-keyhole',
+              { 'text-success': data.id === modelStore.currentModel?.id },
+            ]"
+            :title="!isModelUnlocked(data) ? getUnlockHint(data) : undefined"
           />
 
           <i
+            v-if="isModelUnlocked(data)"
             class="i-lucide:star"
             :class="{ 'text-warning fill-current': modelStore.isFavorite(data.id) }"
             :title="$t(`pages.preference.model.labels.${modelStore.isFavorite(data.id) ? 'unfavorite' : 'favorite'}`)"
-            @click.stop="modelStore.toggleFavorite(data.id)"
+            @click.stop="handleToggleFavorite(data)"
           />
 
           <i
-            v-if="catStore.model.behavior && data.renderer !== 'image' && modelStore.currentModel?.id === data.id"
+            v-else
+            class="i-lucide:star-off opacity-40"
+            :title="getUnlockHint(data)"
+            @click.stop="handleToggleFavorite(data)"
+          />
+
+          <i
+            v-if="catStore.model.behavior && isModelUnlocked(data) && data.renderer !== 'image' && modelStore.currentModel?.id === data.id"
             class="i-lucide:smile"
             @click.stop="openBehaviorModal = true"
           />
@@ -168,3 +236,33 @@ async function handleDelete(item: Model) {
     v-model="openBehaviorModal"
   />
 </template>
+
+<style scoped lang="scss">
+.model-card--locked {
+  cursor: default;
+}
+
+.model-cover {
+  position: relative;
+  overflow: hidden;
+
+  > img {
+    display: block;
+    width: 100%;
+  }
+
+  &__lock {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4em;
+    background: rgb(29 39 54 / 55%);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgb(0 0 0 / 45%);
+  }
+}
+</style>

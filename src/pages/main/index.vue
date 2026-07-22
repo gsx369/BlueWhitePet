@@ -13,10 +13,13 @@ import { useDebounceFn, useEventListener } from '@vueuse/core'
 import { message } from 'antdv-next'
 import { round } from 'es-toolkit'
 import { nth } from 'es-toolkit/compat'
+import { nanoid } from 'nanoid'
 import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import type { InteractionEventResult } from '@/domain/progression'
 import type { WindowPlacement } from '@/plugins/window'
+import type { ModelTapInteraction } from '@/stores/model'
 
 import { useAppMenu } from '@/composables/useAppMenu'
 import { useDevice } from '@/composables/useDevice'
@@ -29,6 +32,7 @@ import { hideWindow, setAlwaysOnTop, setTaskbarVisibility, showWindow } from '@/
 import { useCatStore } from '@/stores/cat'
 import { useGeneralStore } from '@/stores/general.ts'
 import { useModelStore } from '@/stores/model'
+import { useProgressionStore } from '@/stores/progression'
 import { isImage } from '@/utils/is'
 import live2d from '@/utils/live2d'
 import { join } from '@/utils/path'
@@ -40,6 +44,7 @@ const { startListening } = useDevice()
 const appWindow = getCurrentWebviewWindow()
 const { modelSize, handleLoad, handleDestroy, handleResize, handleKeyChange } = useModel()
 const catStore = useCatStore()
+const progressionStore = useProgressionStore()
 const { getBaseMenu, getExitMenu } = useAppMenu()
 const { t } = useI18n()
 const modelStore = useModelStore()
@@ -58,6 +63,9 @@ const interaction = ref<Interaction>()
 const wheelFeedback = ref<WheelFeedback>()
 const bubbleText = ref('')
 const bubbleSide = ref<BubbleSide>('left')
+const hudBurst = ref(0)
+const hudBurstVersion = ref(0)
+const rewardToast = ref<RewardToast>()
 const temporarilyTransparent = ref(false)
 const currentRenderer = computed(() => modelStore.currentModel?.renderer ?? 'live2d')
 const imageModel = computed(() => currentRenderer.value === 'image' ? modelStore.currentModel?.image : undefined)
@@ -88,6 +96,29 @@ const speechSlotStyle = computed(() => {
     width: `${bounds.width * 100}%`,
     height: `${bounds.height * 100}%`,
   }
+})
+const hudSlotStyle = computed(() => {
+  const bounds = modelStore.currentModel?.hudBounds
+
+  if (!bounds) return
+
+  return {
+    top: `${bounds.y * 100}%`,
+    right: 'auto',
+    left: `${bounds.x * 100}%`,
+    width: `${bounds.width * 100}%`,
+    height: `${bounds.height * 100}%`,
+  }
+})
+const hudVisible = computed(() => {
+  return catStore.feedback.hudEnabled
+    && progressionStore.initialized
+    && catStore.window.scale >= 30
+})
+const rewardToastVisible = computed(() => {
+  return catStore.feedback.rewardNotifications
+    && Boolean(rewardToast.value)
+    && catStore.window.scale >= 30
 })
 
 const interactions = ['jump', 'squash', 'shake'] as const
@@ -125,14 +156,27 @@ interface PointerStart {
   y: number
 }
 
+interface RewardToast {
+  rewardId: string
+  name: string
+  cover?: string
+  rarity?: string
+}
+
 const DRAG_THRESHOLD = 6
 const WHEEL_THRESHOLD = 36
 const SCALE_STEP = 5
 
 let interactionIndex = 0
+let interactionAnimationVersion = 0
+let tapInteractionVersion = 0
+let lastTapActionIndex = -1
 let lastDialogueIndex = -1
+let lastDialogueAt = 0
 let pointerStart: PointerStart | undefined
 let bubbleTimer: ReturnType<typeof setTimeout> | undefined
+let hudBurstTimer: ReturnType<typeof setTimeout> | undefined
+let rewardToastTimer: ReturnType<typeof setTimeout> | undefined
 let wheelResetTimer: ReturnType<typeof setTimeout> | undefined
 let temporaryTransparencyTimer: ReturnType<typeof setTimeout> | undefined
 let wheelDelta = 0
@@ -142,6 +186,7 @@ let modelLoadVersion = 0
 let modelLoadQueue: Promise<void> = Promise.resolve()
 let windowSizeVersion = 0
 let windowSizeQueue: Promise<void> = Promise.resolve()
+const rewardToastQueue: RewardToast[] = []
 
 onMounted(startListening)
 
@@ -152,7 +197,10 @@ onUnmounted(() => {
   windowSizeVersion += 1
   handleDestroy()
   clearTimeout(bubbleTimer)
+  clearTimeout(hudBurstTimer)
+  clearTimeout(rewardToastTimer)
   clearTimeout(temporaryTransparencyTimer)
+  rewardToastQueue.length = 0
   catStore.temporaryPassThrough = false
   resetWheelState()
 })
@@ -179,6 +227,7 @@ watch(() => modelStore.currentModel?.id, () => {
   modelStore.modelReady = false
   backgroundImagePath.value = undefined
   clearObject([modelStore.supportKeys, modelStore.pressedKeys])
+  lastTapActionIndex = -1
   clearInteractionState()
 
   modelLoadQueue = modelLoadQueue.then(async () => {
@@ -484,6 +533,8 @@ function releasePointerCapture(pointerId: number) {
 }
 
 function clearInteractionState() {
+  interactionAnimationVersion += 1
+  tapInteractionVersion += 1
   interaction.value = undefined
   bubbleText.value = ''
   clearTimeout(bubbleTimer)
@@ -523,28 +574,128 @@ function isInsideCharacter(x: number, y: number) {
   return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
 }
 
-async function triggerInteraction() {
-  catStore.recordInteraction()
+function chooseTapInteraction() {
+  const configured = modelStore.currentModel?.interactions?.tap
 
-  const nextInteraction = interactions[interactionIndex % interactions.length]
+  if (!configured?.length) {
+    const fallback = interactions[interactionIndex % interactions.length]
 
-  interactionIndex += 1
+    interactionIndex += 1
+
+    return { fallback, weight: 1 } satisfies ModelTapInteraction
+  }
+
+  const candidates = configured.length > 1
+    ? configured
+        .map((action, index) => ({ action, index }))
+        .filter(({ index }) => index !== lastTapActionIndex)
+    : configured.map((action, index) => ({ action, index }))
+  const totalWeight = candidates.reduce((total, { action }) => total + action.weight, 0)
+  let cursor = Math.random() * totalWeight
+  let choice = candidates[candidates.length - 1]
+
+  for (const candidate of candidates) {
+    cursor -= candidate.action.weight
+
+    if (cursor <= 0) {
+      choice = candidate
+      break
+    }
+  }
+
+  lastTapActionIndex = choice.index
+
+  return choice.action
+}
+
+async function playFallbackInteraction(nextInteraction: Interaction) {
+  const version = ++interactionAnimationVersion
+
   interaction.value = undefined
 
   await nextTick()
 
+  if (version !== interactionAnimationVersion) return
+
   // Force a style flush so repeated clicks restart the same CSS animation cleanly.
   void activeInteractionLayer.value?.offsetWidth
   interaction.value = nextInteraction
+}
 
-  const dialoguePool = currentRenderer.value === 'live2d' ? live2dDialogues : dialogues
-  const choices = dialoguePool
-    .map((text, index) => ({ text, index }))
-    .filter(({ index }) => index !== lastDialogueIndex)
-  const choice = choices[Math.floor(Math.random() * choices.length)]
+async function playTapInteraction(
+  action: ModelTapInteraction,
+  version: number,
+  modelId: string | undefined,
+) {
+  const isCurrent = () => {
+    return version === tapInteractionVersion
+      && modelStore.currentModel?.id === modelId
+  }
+  let motionStarted = false
 
-  lastDialogueIndex = choice.index
-  bubbleText.value = choice.text
+  if (
+    isCurrent()
+    && currentRenderer.value === 'live2d'
+    && action.motionGroup !== undefined
+    && action.motionIndex !== undefined
+  ) {
+    const motions = modelStore.currentMotions
+      .find(([groupName]) => groupName === action.motionGroup)?.[1]
+    const motion = motions?.[action.motionIndex]
+
+    const motionResult = motion && modelStore.modelReady
+      ? live2d.startMotion(motion)
+      : undefined
+
+    if (motionResult) {
+      motionStarted = true
+      void motionResult.then((handle) => {
+        if (isCurrent() && handle === -1) void playFallbackInteraction(action.fallback)
+      }).catch((error) => {
+        void warn(`Unable to start tap motion: ${String(error)}`)
+        if (isCurrent()) void playFallbackInteraction(action.fallback)
+      })
+    }
+  }
+
+  if (
+    isCurrent()
+    && currentRenderer.value === 'live2d'
+    && modelStore.modelReady
+    && action.expressionIndex !== undefined
+    && modelStore.currentExpressions[action.expressionIndex]
+  ) {
+    live2d.setExpression(action.expressionIndex)
+  }
+
+  if (isCurrent() && !motionStarted) await playFallbackInteraction(action.fallback)
+}
+
+function showInteractionBurst(count: number) {
+  if (count <= 0) return
+
+  hudBurst.value += count
+  hudBurstVersion.value += 1
+  clearTimeout(hudBurstTimer)
+  hudBurstTimer = setTimeout(() => {
+    hudBurst.value = 0
+  }, 700)
+}
+
+function showDialogue(text: string, force = false) {
+  if (
+    !catStore.feedback.dialogueEnabled
+    || !modelStore.currentModel?.bubbleBounds
+  ) {
+    return false
+  }
+
+  const now = Date.now()
+
+  if (!force && (now - lastDialogueAt < 1800 || Math.random() >= 0.45)) return false
+
+  lastDialogueAt = now
+  bubbleText.value = text
   bubbleSide.value = currentRenderer.value === 'live2d'
     ? 'left'
     : Math.random() < 0.5 ? 'left' : 'right'
@@ -552,7 +703,90 @@ async function triggerInteraction() {
   clearTimeout(bubbleTimer)
   bubbleTimer = setTimeout(() => {
     bubbleText.value = ''
-  }, 2400)
+  }, force ? 3200 : 2400)
+
+  return true
+}
+
+function showRandomDialogue() {
+  const dialoguePool = currentRenderer.value === 'live2d' ? live2dDialogues : dialogues
+  const choices = dialoguePool
+    .map((text, index) => ({ text, index }))
+    .filter(({ index }) => index !== lastDialogueIndex)
+  const choice = choices[Math.floor(Math.random() * choices.length)]
+
+  if (!choice) return
+
+  if (showDialogue(choice.text)) lastDialogueIndex = choice.index
+}
+
+function showNextRewardToast() {
+  if (rewardToast.value) return
+
+  const nextReward = rewardToastQueue.shift()
+
+  if (!nextReward) return
+
+  rewardToast.value = nextReward
+  clearTimeout(rewardToastTimer)
+  rewardToastTimer = setTimeout(() => {
+    rewardToast.value = undefined
+    rewardToastTimer = setTimeout(showNextRewardToast, 180)
+  }, 3800)
+}
+
+function enqueueRewardToast(rewardId: string) {
+  if (!catStore.feedback.rewardNotifications) return
+
+  const definition = progressionStore.getRewardDefinition(rewardId)
+  const model = modelStore.models.find(model => model.rewardId === rewardId)
+
+  rewardToastQueue.push({
+    rewardId,
+    name: definition ? t(definition.titleKey) : model?.displayName ?? rewardId,
+    cover: model ? convertFileSrc(join(model.path, model.cover ?? 'resources/cover.png')) : undefined,
+    rarity: model?.rarity ?? definition?.rarity,
+  })
+  showNextRewardToast()
+}
+
+function handleProgressionFeedback(result: InteractionEventResult) {
+  showInteractionBurst(result.acceptedInteractions)
+
+  for (const reward of result.rewards) enqueueRewardToast(reward.rewardId)
+
+  const reward = result.rewards[0]
+
+  if (reward) {
+    const definition = progressionStore.getRewardDefinition(reward.rewardId)
+    const rewardName = definition ? t(definition.titleKey) : reward.rewardId
+
+    showDialogue(t('pages.main.growth.newReward', { reward: rewardName }), true)
+    return
+  }
+
+  const milestone = result.milestones.at(-1)
+
+  if (milestone) {
+    showDialogue(t('pages.main.growth.milestone', { count: milestone.target }), true)
+    return
+  }
+
+  showRandomDialogue()
+}
+
+function triggerInteraction() {
+  const now = Date.now()
+  const action = chooseTapInteraction()
+  const version = ++tapInteractionVersion
+  const modelId = modelStore.currentModel?.id
+
+  catStore.recordInteraction()
+  void playTapInteraction(action, version, modelId)
+
+  const result = progressionStore.recordValidInteraction(nanoid(), now)
+
+  handleProgressionFeedback(result)
 }
 
 function handleAnimationEnd(event: AnimationEvent) {
@@ -747,6 +981,65 @@ function handleWheel(event: WheelEvent) {
       </Transition>
     </div>
 
+    <div
+      v-if="hudVisible || rewardToastVisible"
+      class="hud-slot"
+      :style="hudSlotStyle"
+    >
+      <Transition
+        mode="out-in"
+        name="reward"
+      >
+        <div
+          v-if="rewardToastVisible && rewardToast"
+          :key="rewardToast.rewardId"
+          class="reward-toast"
+          :class="rewardToast.rarity ? `reward-toast--${rewardToast.rarity}` : undefined"
+          role="status"
+        >
+          <img
+            v-if="rewardToast.cover"
+            :alt="rewardToast.name"
+            class="reward-toast__cover"
+            draggable="false"
+            :src="rewardToast.cover"
+          >
+          <i
+            v-else
+            class="i-lucide:gift reward-toast__icon"
+          />
+
+          <span class="reward-toast__content">
+            <small aria-hidden="true">🎁</small>
+            <strong>{{ $t('pages.main.growth.newReward', { reward: rewardToast.name }) }}</strong>
+          </span>
+        </div>
+
+        <div
+          v-else-if="hudVisible"
+          key="interaction-hud"
+          class="interaction-hud"
+          :title="$t('pages.main.growth.lifetimeTotal', { count: progressionStore.lifetimeInteractions.toLocaleString() })"
+        >
+          <span class="interaction-hud__total">
+            <i class="i-lucide:mouse-pointer-click" />
+            {{ progressionStore.lifetimeInteractions.toLocaleString() }}
+          </span>
+
+          <span
+            v-if="hudBurst"
+            :key="hudBurstVersion"
+            class="interaction-hud__burst"
+          >
+            +{{ hudBurst }}
+            <small v-if="hudBurst > 1">
+              {{ $t('pages.main.growth.combo', { count: hudBurst }) }}
+            </small>
+          </span>
+        </div>
+      </Transition>
+    </div>
+
     <template v-if="currentRenderer === 'image'">
       <div
         ref="characterStage"
@@ -907,6 +1200,146 @@ function handleWheel(event: WheelEvent) {
   }
 }
 
+.hud-slot {
+  position: absolute;
+  z-index: 24;
+  top: 3%;
+  right: 4%;
+  width: 32%;
+  height: 12%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.interaction-hud {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  justify-content: flex-end;
+  color: #26374d;
+  font-size: clamp(8px, 3vw, 15px);
+  font-weight: 800;
+  line-height: 1;
+
+  &__total {
+    display: inline-flex;
+    min-width: 3.3em;
+    align-items: center;
+    justify-content: center;
+    gap: 0.34em;
+    padding: 0.48em 0.72em;
+    border: max(1px, 0.24vw) solid rgb(55 72 96 / 78%);
+    border-radius: 999px;
+    background: rgb(255 255 255 / 92%);
+    box-shadow: 0 0.22em 0.62em rgb(31 48 72 / 18%);
+    white-space: nowrap;
+  }
+
+  &__burst {
+    position: absolute;
+    top: calc(100% + 0.18em);
+    right: 0.28em;
+    display: flex;
+    align-items: center;
+    gap: 0.38em;
+    color: #1687c7;
+    filter: drop-shadow(0 0.08em 0 rgb(255 255 255 / 90%));
+    font-size: 1.12em;
+    animation: interaction-burst 700ms cubic-bezier(0.18, 0.75, 0.2, 1) both;
+    white-space: nowrap;
+
+    small {
+      font-size: 0.58em;
+      font-weight: 750;
+    }
+  }
+}
+
+.reward-toast {
+  --reward-accent: #69809e;
+
+  display: flex;
+  min-width: 100%;
+  max-width: 175%;
+  align-items: center;
+  gap: 0.52em;
+  padding: 0.45em 0.62em;
+  border: max(1px, 0.3vw) solid var(--reward-accent);
+  border-radius: 0.72em;
+  background: rgb(255 255 255 / 96%);
+  box-shadow: 0 0.3em 1em color-mix(in srgb, var(--reward-accent) 32%, transparent);
+  color: #26374d;
+  font-size: clamp(7px, 2.5vw, 13px);
+  line-height: 1.15;
+
+  &--uncommon {
+    --reward-accent: #25a66f;
+  }
+
+  &--rare {
+    --reward-accent: #3389e6;
+  }
+
+  &--epic {
+    --reward-accent: #9a62db;
+  }
+
+  &--legendary {
+    --reward-accent: #e49a25;
+  }
+
+  &__cover,
+  &__icon {
+    width: 2.65em;
+    height: 2.65em;
+    flex: 0 0 auto;
+    border-radius: 0.52em;
+  }
+
+  &__cover {
+    background: #edf6fb;
+    object-fit: contain;
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    color: var(--reward-accent);
+    font-size: 1.7em;
+  }
+
+  &__content {
+    display: grid;
+    min-width: 0;
+    gap: 0.16em;
+
+    small {
+      font-size: 0.82em;
+    }
+
+    strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+.reward-enter-active,
+.reward-leave-active {
+  transition:
+    opacity 170ms ease,
+    transform 200ms cubic-bezier(0.18, 0.75, 0.2, 1);
+}
+
+.reward-enter-from,
+.reward-leave-to {
+  opacity: 0;
+  transform: translateY(-0.35em) scale(0.9);
+}
+
 .character-stage {
   position: absolute;
   z-index: 1;
@@ -997,6 +1430,24 @@ function handleWheel(event: WheelEvent) {
 .bubble-leave-to {
   opacity: 0;
   transform: translateY(0.35em) scale(0.92);
+}
+
+@keyframes interaction-burst {
+  0% {
+    opacity: 0;
+    transform: translateY(0.35em) scale(0.82);
+  }
+  22% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08);
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-0.55em) scale(0.96);
+  }
 }
 
 @keyframes pet-jump {

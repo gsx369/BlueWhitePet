@@ -7,6 +7,13 @@
         "copySuccess": "Đã sao chép ảnh thú cưng vào bảng nhớ tạm.",
         "saveSuccess": "Đã lưu ảnh thú cưng vào {path}.",
         "imageUnavailable": "Ảnh thú cưng chưa sẵn sàng."
+      },
+      "growth": {
+        "newReward": "Đã mở khóa phần thưởng mới: {reward}",
+        "milestone": "Đã đạt mốc {count} tương tác hiệu quả!",
+        "interactionUnit": "{count} lượt tương tác",
+        "lifetimeTotal": "Tổng cộng {count}",
+        "combo": "Chuỗi {count}"
       }
     },
     "preference": {
@@ -66,6 +73,63 @@
           "center": "Ở giữa",
           "nextMonitor": "Màn hình kế tiếp",
           "resetStats": "Đặt lại thống kê"
+        },
+        "growth": {
+          "labels": {
+            "interactionFeedback": "Phản hồi tương tác",
+            "interactionHUD": "Bộ đếm tương tác trên màn hình",
+            "dialogueBubbles": "Bong bóng hội thoại",
+            "rewardNotifications": "Thông báo phần thưởng",
+            "growthAndCollection": "Tiến trình và bộ sưu tập",
+            "lifetimeInteractions": "Tổng tương tác hiệu quả",
+            "nextMilestone": "Mốc tiếp theo",
+            "nextRandomCheck": "Lần kiểm tra bất ngờ tiếp theo",
+            "pityStatus": "Bảo đảm phần thưởng",
+            "collectionRewards": "Bộ sưu tập phần thưởng",
+            "dropHistory": "Phần thưởng gần đây",
+            "collected": "Đã sưu tập"
+          },
+          "hints": {
+            "interactionHUD": "Hiện nhanh +1, chuỗi liên tiếp và tổng số bên cạnh thú cưng sau một tương tác hiệu quả.",
+            "dialogueBubbles": "Hiển thị bong bóng hội thoại ngắn khi tương tác với thú cưng.",
+            "rewardNotifications": "Hiển thị thông báo khi mở khóa mốc hoặc phần thưởng bất ngờ.",
+            "growthSummary": "Tiến trình được lưu cục bộ và không bị ảnh hưởng khi đặt lại thống kê tạm thời bên dưới.",
+            "collectionRewards": "Phần thưởng chỉ được lưu cục bộ và không thể trao đổi. Mô hình tùy chỉnh đã nhập luôn dùng được.",
+            "dropHistory": "Chỉ những phần thưởng nhận được gần đây nhất được hiển thị tại đây.",
+            "resetStats": "Chỉ đặt lại bộ đếm tạm thời. Tổng tiến trình, phần thưởng đã mở khóa và bộ sưu tập vẫn được giữ nguyên.",
+            "resetGrowth": "Thao tác này xóa vĩnh viễn tổng tiến trình, phần thưởng đã mở khóa, tiến độ bảo đảm và lịch sử. Không thể hoàn tác."
+          },
+          "buttons": {
+            "resetGrowth": "Đặt lại tiến trình và bộ sưu tập",
+            "confirmResetGrowth": "Đặt lại vĩnh viễn"
+          },
+          "status": {
+            "owned": "Đã sở hữu",
+            "locked": "Chưa mở khóa",
+            "milestoneAt": "Khi đạt {count} tổng lượt tương tác",
+            "interactionsRemaining": "Còn {count} tương tác hiệu quả",
+            "readyNextInteraction": "Sẵn sàng ở lần tương tác hiệu quả tiếp theo",
+            "allMilestonesClaimed": "Đã thu thập tất cả các mốc cố định",
+            "randomCheckIn": "Sau {count} tương tác hiệu quả",
+            "pityProgress": "{current} / {target} lần kiểm tra",
+            "pityGuaranteed": "Lần kiểm tra đủ điều kiện tiếp theo được bảo đảm",
+            "allRewardsOwned": "Đã sở hữu tất cả phần thưởng có thể sưu tập",
+            "noRewards": "Chưa có phần thưởng để sưu tập",
+            "noDropHistory": "Chưa nhận được phần thưởng nào"
+          },
+          "sources": {
+            "milestone": "Cột mốc",
+            "drop": "Bất ngờ",
+            "random": "Bất ngờ",
+            "pity": "Bảo đảm"
+          },
+          "rarities": {
+            "common": "Thường",
+            "uncommon": "Không thường",
+            "rare": "Hiếm",
+            "epic": "Sử thi",
+            "legendary": "Huyền thoại"
+          }
         }
       },
       "general": {
@@ -116,14 +180,17 @@
           "deleteModel": "Xóa mô hình",
           "favorite": "Thêm vào yêu thích",
           "unfavorite": "Bỏ khỏi yêu thích",
-          "randomFavorite": "Mẫu yêu thích ngẫu nhiên"
+          "randomFavorite": "Mẫu yêu thích ngẫu nhiên",
+          "locked": "Chưa mở khóa"
         },
         "hints": {
           "deleteSuccess": "Xóa thành công",
           "deleteModel": "Bạn chắc muốn xóa mô hình này?",
           "importSuccess": "Nhập thành công",
           "clickOrDragToImport": "Nhấp hoặc kéo tệp vào đây",
-          "noFavorites": "Thêm mô hình vào yêu thích để chuyển đổi ngẫu nhiên giữa chúng."
+          "noFavorites": "Thêm mô hình vào yêu thích để chuyển đổi ngẫu nhiên giữa chúng.",
+          "unlockByInteraction": "Mở khóa khi đạt {count} tổng lượt tương tác hiệu quả.",
+          "lockedModel": "Tiếp tục tương tác với thú cưng để mở khóa mô hình phần thưởng này."
         },
         "tooltips": {
           "createModel": "Tạo mô hình",
@@ -178,6 +245,26 @@
           "feedbackIssues": "Báo lỗi",
           "viewLog": "Xem nhật ký"
         }
+      }
+    }
+  },
+  "progression": {
+    "rewards": {
+      "blueWhite": {
+        "title": "Mèo Xanh Trắng · Tương tác Tĩnh",
+        "description": "Diện mạo thú cưng tĩnh, nhẹ nhàng được mở khóa bằng tổng lượt tương tác."
+      },
+      "standard": {
+        "title": "BongoCat · Chế độ Tiêu chuẩn",
+        "description": "Chế độ Live2D cổ điển cho tương tác bàn phím và chuột."
+      },
+      "keyboard": {
+        "title": "BongoCat · Chế độ Bàn phím",
+        "description": "Chế độ Live2D tập trung vào phản hồi thao tác bàn phím."
+      },
+      "gamepad": {
+        "title": "BongoCat · Chế độ Tay cầm",
+        "description": "Chế độ Live2D dành cho phản hồi thao tác tay cầm."
       }
     }
   },
